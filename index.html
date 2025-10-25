@@ -4,19 +4,48 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resume Builder</title>
-  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- ✅ TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Google Font for a cleaner, Canva-like look -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
 </head>
-<body>
-  <header>
-    <h1>📄 Resume Builder</h1>
+
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+  <!-- 🔹 Header -->
+  <header class="flex justify-between items-center p-4 bg-white shadow-md sticky top-0 z-10">
+    <h1 class="text-xl font-semibold">Resume Builder</h1>
+    <button id="generatePDF" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 active:scale-95 transition">
+      Generate PDF
+    </button>
   </header>
 
-  <main id="editor">
-    <div id="components"></div>
-    <button id="addComponent">➕ Add Section</button>
-    <button id="generatePDF">🚀 Generate PDF</button>
+  <!-- 🔹 Main -->
+  <main class="flex-1 max-w-2xl mx-auto w-full p-4 space-y-6">
+    <section id="sections" class="space-y-4">
+      <!-- Components dynamically inserted -->
+    </section>
+
+    <div class="text-center">
+      <button id="addSection"
+        class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md shadow-sm active:scale-95 transition">
+        + Add Section
+      </button>
+    </div>
   </main>
 
-  <script src="js/app.js"></script>
+  <!-- 🔹 Footer -->
+  <footer class="text-center text-sm text-gray-500 p-4">
+    Built for mobile • Generates LaTeX → PDF via Hugging Face
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>
