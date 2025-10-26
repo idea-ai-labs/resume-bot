@@ -1,57 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resume Builder</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Builder</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
+  <div class="container">
     <h1>Resume Builder</h1>
 
-    <!-- Personal Info -->
-    <section class="card" id="personal-info">
-        <h2>Personal Info</h2>
-        <input type="text" id="name" placeholder="Full Name" value="John Doe">
-        <input type="text" id="phone" placeholder="Phone" value="123-456-7890">
-        <input type="email" id="email" placeholder="Email" value="johndoe@email.com">
-        <input type="url" id="website" placeholder="Website/LinkedIn" value="https://linkedin.com/in/johndoe">
+    <!-- Contact Section -->
+    <section id="contact">
+      <h2>Contact</h2>
+      <input type="text" placeholder="Name" id="contact-name">
+      <input type="text" placeholder="Phone" id="contact-phone">
+      <input type="email" placeholder="Email" id="contact-email">
+      <input type="text" placeholder="Website" id="contact-website">
     </section>
 
     <!-- Education Section -->
-    <section class="card" id="education-section">
-        <h2>Education</h2>
-        <div class="entries" id="education-entries"></div>
-        <button class="add-btn" onclick="addEducation()">+ Add Education</button>
+    <section id="education">
+      <h2>Education <button onclick="addEducation()">+</button></h2>
+      <div id="education-container"></div>
     </section>
 
     <!-- Experience Section -->
-    <section class="card" id="experience-section">
-        <h2>Experience</h2>
-        <div class="entries" id="experience-entries"></div>
-        <button class="add-btn" onclick="addExperience()">+ Add Experience</button>
+    <section id="experience">
+      <h2>Experience <button onclick="addExperience()">+</button></h2>
+      <div id="experience-container"></div>
     </section>
 
     <!-- Projects Section -->
-    <section class="card" id="projects-section">
-        <h2>Projects</h2>
-        <div class="entries" id="projects-entries"></div>
-        <button class="add-btn" onclick="addProject()">+ Add Project</button>
+    <section id="projects">
+      <h2>Projects <button onclick="addProject()">+</button></h2>
+      <div id="projects-container"></div>
     </section>
 
     <!-- Skills Section -->
-    <section class="card" id="skills-section">
-        <h2>Skills</h2>
-        <div class="entries" id="skills-entries"></div>
-        <button class="add-btn" onclick="addSkill()">+ Add Skill</button>
+    <section id="skills">
+      <h2>Skills <button onclick="addSkill()">+</button></h2>
+      <div id="skills-container"></div>
     </section>
 
-    <!-- Generate PDF -->
-    <button id="generate-btn" onclick="generatePDF()">Generate PDF</button>
-</div>
+    <button id="generate-pdf" onclick="generatePDF()">Generate PDF</button>
+  </div>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
