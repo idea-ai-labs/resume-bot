@@ -125,6 +125,12 @@ function addSkill(data = {}) {
   container.appendChild(card);
 }
 
+function logDebug(message) {
+    const panel = document.getElementById("debugPanel");
+    const timestamp = new Date().toLocaleTimeString();
+    panel.textContent += `[${timestamp}] ${message}\n`;
+    panel.scrollTop = panel.scrollHeight; // auto-scroll
+}
 // ------------------------------
 // On Load: Prefill Defaults
 // ------------------------------
