@@ -182,29 +182,40 @@ function collectResumeData() {
 // Generate PDF (Hugging Face Call)
 // ------------------------------
 async function generatePDF() {
-  const resumeData = collectResumeData();
-  console.log("📤 Sending data to Hugging Face API:", resumeData);
+  const resumeData = collectResumeData(); // already defined in your script
+  console.log("Sending data to backend:", resumeData);
+
+  // 👉 Change this to your actual backend endpoint
+  const API_URL = "https://idea-ai-resumelatex.hf.space/generate"; 
+  // Example: "http://127.0.0.1:7860/generate"
 
   try {
-    const response = await fetch("https://your-huggingface-space-url.hf.space/api/resume-pdf", {
+    const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(resumeData)
     });
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+      const errText = await response.text();
+      alert("❌ Error generating PDF:\n" + errText);
+      return;
+    }
+
     const blob = await response.blob();
-
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "resume.pdf";
-    a.click();
-    URL.revokeObjectURL(url);
 
-    alert("✅ PDF generated successfully!");
-  } catch (err) {
-    console.error("❌ Error generating PDF:", err);
-    alert("Something went wrong while generating your PDF. Please check the console.");
+    // Trigger download
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "resume.pdf";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    alert("⚠️ Failed to connect to backend.\n" + error.message);
   }
 }
