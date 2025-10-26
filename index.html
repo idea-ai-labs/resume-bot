@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hex Resume Builder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f7f7f7;
+    }
+    h2 {
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.3rem 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+    .card {
+      background: #fff;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .remove-btn {
+      position: absolute;
+      top: 0.3rem;
+      right: 0.3rem;
+      background: #ff4d4d;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .add-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+    #debugPanel {
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      font-size: 0.9rem;
+      padding: 0.5rem;
+      height: 150px;
+      overflow-y: auto;
+      margin-top: 1rem;
+      border-radius: 6px;
+    }
+    #spinner-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .spinner-container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .spinner {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧾 Hex Resume Builder</h1>
+
+  <!-- Basic Info -->
+  <h2>Contact Info</h2>
+  <input type="text" id="name" placeholder="Full Name">
+  <input type="email" id="email" placeholder="Email">
+  <input type="text" id="phone" placeholder="Phone">
+  <input type="url" id="website" placeholder="Website / LinkedIn">
+
+  <!-- Education -->
+  <h2>Education</h2>
+  <div id="education-container"></div>
+  <button type="button" class="add-btn" onclick="addEducation()">+ Add Education</button>
+
+  <!-- Experience -->
+  <h2>Experience</h2>
+  <div id="experience-container"></div>
+  <button type="button" class="add-btn" onclick="addExperience()">+ Add Experience</button>
+
+  <!-- Projects -->
+  <h2>Projects</h2>
+  <div id="projects-container"></div>
+  <button type="button" class="add-btn" onclick="addProject()">+ Add Project</button>
+
+  <!-- Skills -->
+  <h2>Skills</h2>
+  <div id="skills-container"></div>
+  <button type="button" class="add-btn" onclick="addSkill()">+ Add Skill</button>
+
+  <!-- Generate PDF -->
+  <button type="button" class="add-btn" style="background:#007bff;" onclick="generatePDF()">Generate PDF</button>
+
+  <!-- Debug Panel -->
+  <h2>Debug Panel</h2>
+  <div id="debugPanel"></div>
+
+  <!-- Scripts -->
+  <script src="resume.js"></script>
+</body>
+</html>
