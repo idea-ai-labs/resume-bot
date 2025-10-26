@@ -181,7 +181,7 @@ function collectResumeData() {
 // ------------------------------
 // Generate PDF (Hugging Face Call)
 // ------------------------------
-async function generatePDF() {
+async function generatePDF-old() {
   const resumeData = collectResumeData(); // already defined in your script
   console.log("Sending data to backend:", resumeData);
 
@@ -217,5 +217,56 @@ async function generatePDF() {
   } catch (error) {
     console.error("Error generating PDF:", error);
     alert("⚠️ Failed to connect to backend.\n" + error.message);
+  }
+}
+
+async function generatePDF() {
+  const resumeData = collectResumeData();
+  console.log("📤 Sending data to backend:", resumeData);
+
+  const API_URL = "https://idea-ai-resumelatex.hf.space/proxy/5000/generate";
+
+  // Show loading spinner
+  const spinner = document.createElement("div");
+  spinner.id = "spinner-overlay";
+  spinner.innerHTML = `
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <p>Generating your PDF...</p>
+    </div>`;
+  document.body.appendChild(spinner);
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(resumeData)
+    });
+
+    console.log("📥 Response status:", response.status);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("❌ Error response:", errText);
+      alert("❌ Error generating PDF:\n" + errText);
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "resume.pdf";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    console.log("✅ PDF downloaded successfully.");
+
+  } catch (error) {
+    console.error("⚠️ Failed to connect:", error);
+    alert("⚠️ Failed to connect to backend.\n" + error.message);
+  } finally {
+    document.getElementById("spinner-overlay")?.remove();
   }
 }
