@@ -128,20 +128,139 @@ function addSkill(data = {}) {
 // ------------------------------
 // On Load: Prefill Defaults
 // ------------------------------
-window.onload = function () {
-  // Basic info
-  document.getElementById('name').value = defaultResumeData.name || '';
-  document.getElementById('email').value = defaultResumeData.contact.email || '';
-  document.getElementById('phone').value = defaultResumeData.contact.phone || '';
-  document.getElementById('website').value = defaultResumeData.contact.website || '';
 
-  // Prefill data
-  defaultResumeData.education.forEach(edu => addEducation(edu));
-  defaultResumeData.experience.forEach(exp => addExperience(exp));
-  defaultResumeData.projects.forEach(proj => addProject(proj));
-  defaultResumeData.skills.forEach(skill => addSkill(skill));
-};
+// Safe init: populate defaults and debug what's present
+window.addEventListener("DOMContentLoaded", () => {
+  try {
+    console.log("INIT: Prefilling default resume data...");
 
+    // quick helpers to test existence
+    const has = name => {
+      try { return typeof window[name] !== "undefined"; }
+      catch { return false; }
+    };
+
+    // Validate default data
+    if (typeof defaultResumeData === "undefined" || !defaultResumeData) {
+      console.warn("INIT: defaultResumeData is missing or undefined.");
+      return;
+    }
+
+    // Basic contact fields (only set if element exists)
+    const setIf = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = value || "";
+      } else {
+        console.warn(`INIT: element #${id} not found in DOM.`);
+      }
+    };
+
+    setIf("name", defaultResumeData.name);
+    setIf("email", (defaultResumeData.contact && defaultResumeData.contact.email) || "");
+    setIf("phone", (defaultResumeData.contact && defaultResumeData.contact.phone) || "");
+    setIf("website", (defaultResumeData.contact && defaultResumeData.contact.website) || "");
+
+    // Generic apply function that supports two patterns:
+    // 1) existing addEducation(data) style
+    // 2) generic addSection('education') or createCard fallback
+    function applyDefaultsArray(kind, items) {
+      if (!Array.isArray(items)) return;
+
+      // prefer specialized add function if available
+      const specialized = {
+        education: "addEducation",
+        experience: "addExperience",
+        projects: "addProject",
+        skills: "addSkill"
+      }[kind];
+
+      if (specialized && has(specialized)) {
+        console.log(`INIT: Using specialized function ${specialized} for ${kind} (${items.length} items).`);
+        items.forEach(it => {
+          try { window[specialized](it); } 
+          catch (e) { console.error(`INIT: error calling ${specialized} for`, it, e); }
+        });
+        return;
+      }
+
+      // fallback: try generic addSection(kind) repeated + populate fields if possible
+      if (has("addSection")) {
+        console.log(`INIT: Using generic addSection for ${kind} (${items.length} items).`);
+        items.forEach(it => {
+          try {
+            // create an empty section then populate inputs inside it
+            addSection(kind); // expected to add a .resume-section in #${kind}-container
+            const container = document.getElementById(`${kind}-container`);
+            if (!container) return;
+            const latest = container.lastElementChild;
+            if (!latest) return;
+            // populate any inputs/textareas by matching keys to placeholders/names
+            Object.entries(it).forEach(([k, v]) => {
+              try {
+                // try name selector then placeholder match
+                const byName = latest.querySelector(`[name="${k}"]`);
+                const byClass = latest.querySelector(`.${k}`);
+                if (byName) byName.value = Array.isArray(v) ? v.join("\n") : v;
+                else if (byClass) byClass.value = Array.isArray(v) ? v.join("\n") : v;
+                else {
+                  // last resort: set first input/textarea if empty
+                  const first = latest.querySelector("input, textarea");
+                  if (first && !first.value) first.value = Array.isArray(v) ? v.join("\n") : v;
+                }
+              } catch(e) { /* ignore field-level errors */ }
+            });
+          } catch (e) {
+            console.error("INIT: error in addSection fallback for", kind, it, e);
+          }
+        });
+        return;
+      }
+
+      // final fallback: try to directly append a card into container
+      console.log(`INIT: Falling back to direct card injection for ${kind} (${items.length} items).`);
+      const container = document.getElementById(`${kind}-container`);
+      if (!container) {
+        console.warn(`INIT: No container found for ${kind} (id=${kind}-container).`);
+        return;
+      }
+      items.forEach(it => {
+        const card = document.createElement("div");
+        card.className = "card";
+        // create simple inputs for object keys
+        Object.entries(it).forEach(([k, v]) => {
+          const label = document.createElement("label");
+          label.textContent = k;
+          const field = document.createElement(Array.isArray(v) ? "textarea" : "input");
+          if (!Array.isArray(v)) field.type = "text";
+          field.value = Array.isArray(v) ? v.join("\n") : v;
+          field.name = k;
+          field.className = k;
+          card.appendChild(label);
+          card.appendChild(field);
+        });
+        // add a remove button
+        const rem = document.createElement("button");
+        rem.type = "button";
+        rem.textContent = "✖";
+        rem.className = "remove-btn";
+        rem.onclick = () => card.remove();
+        card.appendChild(rem);
+        container.appendChild(card);
+      });
+    }
+
+    // Apply arrays
+    applyDefaultsArray("education", defaultResumeData.education || []);
+    applyDefaultsArray("experience", defaultResumeData.experience || []);
+    applyDefaultsArray("projects", defaultResumeData.projects || []);
+    applyDefaultsArray("skills", defaultResumeData.skills || []);
+
+    console.log("INIT: done prefilling defaults.");
+  } catch (err) {
+    console.error("INIT: unexpected error while prefilling defaults:", err);
+  }
+});
 // ------------------------------
 // Collect Data from UI
 // ------------------------------
