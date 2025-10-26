@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Resume Builder</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <h1>Smart Resume Builder</h1>
+
+    <!-- Basic Info -->
+    <section class="section">
+      <h2>Basic Information</h2>
+      <div class="fields-grid">
+        <input type="text" id="name" placeholder="Full Name" />
+        <input type="email" id="email" placeholder="Email" />
+        <input type="text" id="phone" placeholder="Phone" />
+        <input type="text" id="website" placeholder="Website / LinkedIn" />
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section class="section">
+      <h2>Education</h2>
+      <div id="education-container" class="cards"></div>
+      <button onclick="addEducation()" class="add-btn">+ Add Education</button>
+    </section>
+
+    <!-- Experience -->
+    <section class="section">
+      <h2>Experience</h2>
+      <div id="experience-container" class="cards"></div>
+      <button onclick="addExperience()" class="add-btn">+ Add Experience</button>
+    </section>
+
+    <!-- Projects -->
+    <section class="section">
+      <h2>Projects</h2>
+      <div id="projects-container" class="cards"></div>
+      <button onclick="addProject()" class="add-btn">+ Add Project</button>
+    </section>
+
+    <!-- Skills -->
+    <section class="section">
+      <h2>Skills</h2>
+      <div id="skills-container" class="cards"></div>
+      <button onclick="addSkill()" class="add-btn">+ Add Skill</button>
+    </section>
+
+    <!-- Generate -->
+    <section class="section center">
+      <button onclick="generatePDF()" class="generate-btn">🚀 Generate PDF</button>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
