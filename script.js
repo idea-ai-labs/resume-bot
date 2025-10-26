@@ -181,7 +181,7 @@ function collectResumeData() {
 // ------------------------------
 // Generate PDF (Hugging Face Call)
 // ------------------------------
-async function generatePDF-old() {
+async function generatePDF() {
   const resumeData = collectResumeData(); // already defined in your script
   console.log("Sending data to backend:", resumeData);
 
@@ -220,7 +220,7 @@ async function generatePDF-old() {
   }
 }
 
-async function generatePDF() {
+async function generatePDF-new() {
   const resumeData = collectResumeData();
   console.log("📤 Sending data to backend:", resumeData);
 
