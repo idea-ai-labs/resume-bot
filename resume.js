@@ -224,7 +224,8 @@ async function generatePDF() {
   const resumeData = collectResumeData();
   logDebug("Sending data to backend...");
 
-  const API_URL = "https://idea-ai-resumelatex.hf.space/proxy/5000/generate";
+  const API_URL = "https://idea-ai-resumelatex.hf.space/generate";
+  //https://idea-ai-resumelatex.hf.space/proxy/5000/
 
   // Show spinner
   const spinner = document.createElement("div");
