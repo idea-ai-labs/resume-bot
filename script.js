@@ -1,128 +1,129 @@
-// Utility to create input
-function createInput(placeholder, value="") {
-    const input = document.createElement('input');
-    input.type = "text";
-    input.placeholder = placeholder;
-    input.value = value;
-    return input;
+// Utility to create a new card
+function createCard(htmlContent, containerId) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = htmlContent;
+
+  const removeBtn = document.createElement("button");
+  removeBtn.textContent = "X";
+  removeBtn.className = "remove";
+  removeBtn.onclick = () => card.remove();
+  card.appendChild(removeBtn);
+
+  document.getElementById(containerId).appendChild(card);
 }
 
-// Add Education
-function addEducation(school="", location="", degree="", dates="") {
-    const container = document.getElementById('education-entries');
-    const div = document.createElement('div');
-    div.className = "entry";
-    div.innerHTML = `
-        <button class="remove-btn" onclick="this.parentNode.remove()">X</button>
-    `;
-    div.appendChild(createInput("School", school));
-    div.appendChild(createInput("Location", location));
-    div.appendChild(createInput("Degree", degree));
-    div.appendChild(createInput("Dates", dates));
-    container.appendChild(div);
+// Education
+function addEducation() {
+  const html = `
+    <input type="text" placeholder="School">
+    <input type="text" placeholder="Location">
+    <input type="text" placeholder="Degree">
+    <input type="text" placeholder="Dates">
+  `;
+  createCard(html, "education-container");
 }
 
-// Add Experience
-function addExperience(title="", company="", location="", dates="", details="") {
-    const container = document.getElementById('experience-entries');
-    const div = document.createElement('div');
-    div.className = "entry";
-    div.innerHTML = `<button class="remove-btn" onclick="this.parentNode.remove()">X</button>`;
-    div.appendChild(createInput("Job Title", title));
-    div.appendChild(createInput("Company", company));
-    div.appendChild(createInput("Location", location));
-    div.appendChild(createInput("Dates", dates));
-    div.appendChild(createInput("Details", details));
-    container.appendChild(div);
+// Experience
+function addExperience() {
+  const html = `
+    <input type="text" placeholder="Title">
+    <input type="text" placeholder="Company">
+    <input type="text" placeholder="Location">
+    <input type="text" placeholder="Dates">
+    <textarea placeholder="Details (comma separated)"></textarea>
+  `;
+  createCard(html, "experience-container");
 }
 
-// Add Project
-function addProject(title="", description="") {
-    const container = document.getElementById('projects-entries');
-    const div = document.createElement('div');
-    div.className = "entry";
-    div.innerHTML = `<button class="remove-btn" onclick="this.parentNode.remove()">X</button>`;
-    div.appendChild(createInput("Project Title", title));
-    div.appendChild(createInput("Description", description));
-    container.appendChild(div);
+// Projects
+function addProject() {
+  const html = `
+    <input type="text" placeholder="Project Title">
+    <textarea placeholder="Project Description"></textarea>
+  `;
+  createCard(html, "projects-container");
 }
 
-// Add Skill
-function addSkill(category="", items="") {
-    const container = document.getElementById('skills-entries');
-    const div = document.createElement('div');
-    div.className = "entry";
-    div.innerHTML = `<button class="remove-btn" onclick="this.parentNode.remove()">X</button>`;
-    div.appendChild(createInput("Skill Category", category));
-    div.appendChild(createInput("Items (comma separated)", items));
-    container.appendChild(div);
-}
-
-// Collect form data
-function collectData() {
-    const data = {
-        name: document.getElementById('name').value,
-        contact: {
-            phone: document.getElementById('phone').value,
-            email: document.getElementById('email').value,
-            website: document.getElementById('website').value
-        },
-        education: [],
-        experience: [],
-        projects: [],
-        skills: []
-    };
-
-    document.querySelectorAll('#education-entries .entry').forEach(e => {
-        const inputs = e.querySelectorAll('input');
-        data.education.push({
-            school: inputs[0].value,
-            location: inputs[1].value,
-            degree: inputs[2].value,
-            dates: inputs[3].value
-        });
-    });
-
-    document.querySelectorAll('#experience-entries .entry').forEach(e => {
-        const inputs = e.querySelectorAll('input');
-        data.experience.push({
-            title: inputs[0].value,
-            company: inputs[1].value,
-            location: inputs[2].value,
-            dates: inputs[3].value,
-            details: [{description: inputs[4].value}]
-        });
-    });
-
-    document.querySelectorAll('#projects-entries .entry').forEach(e => {
-        const inputs = e.querySelectorAll('input');
-        data.projects.push({title: inputs[0].value, description: inputs[1].value});
-    });
-
-    document.querySelectorAll('#skills-entries .entry').forEach(e => {
-        const inputs = e.querySelectorAll('input');
-        data.skills.push({
-            category: inputs[0].value,
-            items: inputs[1].value.split(',').map(i => i.trim())
-        });
-    });
-
-    return data;
+// Skills
+function addSkill() {
+  const html = `
+    <input type="text" placeholder="Category">
+    <input type="text" placeholder="Comma-separated skills">
+  `;
+  createCard(html, "skills-container");
 }
 
 // Generate PDF
-function generatePDF() {
-    const payload = collectData();
-    console.log("Sending data:", payload);
+async function generatePDF() {
+  const data = {
+    name: document.getElementById("contact-name").value,
+    contact: {
+      phone: document.getElementById("contact-phone").value,
+      email: document.getElementById("contact-email").value,
+      website: document.getElementById("contact-website").value
+    },
+    education: [],
+    experience: [],
+    projects: [],
+    skills: []
+  };
 
-    fetch("https://huggingface-space-url/api/generate", {
-        method: "POST",
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.blob())
-    .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "resume.pdf
+  document.querySelectorAll("#education-container .card").forEach(card => {
+    data.education.push({
+      school: card.children[0].value,
+      location: card.children[1].value,
+      degree: card.children[2].value,
+      dates: card.children[3].value
+    });
+  });
+
+  document.querySelectorAll("#experience-container .card").forEach(card => {
+    data.experience.push({
+      title: card.children[0].value,
+      company: card.children[1].value,
+      location: card.children[2].value,
+      dates: card.children[3].value,
+      details: card.children[4].value.split(",").map(d => ({ description: d.trim() }))
+    });
+  });
+
+  document.querySelectorAll("#projects-container .card").forEach(card => {
+    data.projects.push({
+      title: card.children[0].value,
+      description: card.children[1].value
+    });
+  });
+
+  document.querySelectorAll("#skills-container .card").forEach(card => {
+    data.skills.push({
+      category: card.children[0].value,
+      items: card.children[1].value.split(",").map(s => s.trim())
+    });
+  });
+
+  console.log("Sending data to Hugging Face:", data);
+
+  // REST call to Hugging Face Space
+  try {
+    const response = await fetch("YOUR_HUGGINGFACE_SPACE_URL", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) throw new Error(await response.text());
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resume.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert("Error generating PDF: " + err.message);
+  }
+}
