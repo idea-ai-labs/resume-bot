@@ -1,58 +1,54 @@
 // ============================================================
-// Resume Builder – Plug-and-play components
+// Modern Resume Builder – Mobile-first, Canva-like
 // ============================================================
 
-// ✅ Basic section templates (add more later easily)
 const sectionTemplates = {
   project: `
-    <div class="bg-white p-4 rounded-lg shadow border border-gray-200 relative">
-      <button class="absolute top-2 right-2 text-gray-400 hover:text-red-500 remove-section">✕</button>
-      <h2 class="text-lg font-semibold mb-2">Project</h2>
-      <input placeholder="Title" class="w-full border rounded px-3 py-2 mb-2" />
-      <textarea placeholder="Description" class="w-full border rounded px-3 py-2"></textarea>
+    <div class="fade-in bg-white p-4 rounded-xl shadow-md border border-gray-100 relative">
+      <button class="absolute top-3 right-3 text-gray-400 hover:text-red-500 remove-section">✕</button>
+      <h2 class="text-lg font-semibold mb-3">🧩 Project</h2>
+      <input placeholder="Title" class="w-full border border-gray-200 rounded px-3 py-2 mb-2 focus:ring-2 focus:ring-blue-500" />
+      <textarea placeholder="Description" rows="3" class="w-full border border-gray-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"></textarea>
     </div>
   `,
   education: `
-    <div class="bg-white p-4 rounded-lg shadow border border-gray-200 relative">
-      <button class="absolute top-2 right-2 text-gray-400 hover:text-red-500 remove-section">✕</button>
-      <h2 class="text-lg font-semibold mb-2">Education</h2>
-      <input placeholder="School" class="w-full border rounded px-3 py-2 mb-2" />
-      <input placeholder="Degree" class="w-full border rounded px-3 py-2 mb-2" />
-      <input placeholder="Year" class="w-full border rounded px-3 py-2" />
+    <div class="fade-in bg-white p-4 rounded-xl shadow-md border border-gray-100 relative">
+      <button class="absolute top-3 right-3 text-gray-400 hover:text-red-500 remove-section">✕</button>
+      <h2 class="text-lg font-semibold mb-3">🎓 Education</h2>
+      <input placeholder="School" class="w-full border border-gray-200 rounded px-3 py-2 mb-2 focus:ring-2 focus:ring-blue-500" />
+      <input placeholder="Degree" class="w-full border border-gray-200 rounded px-3 py-2 mb-2 focus:ring-2 focus:ring-blue-500" />
+      <input placeholder="Year" class="w-full border border-gray-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500" />
     </div>
   `,
   experience: `
-    <div class="bg-white p-4 rounded-lg shadow border border-gray-200 relative">
-      <button class="absolute top-2 right-2 text-gray-400 hover:text-red-500 remove-section">✕</button>
-      <h2 class="text-lg font-semibold mb-2">Experience</h2>
-      <input placeholder="Company" class="w-full border rounded px-3 py-2 mb-2" />
-      <input placeholder="Role" class="w-full border rounded px-3 py-2 mb-2" />
-      <textarea placeholder="Details" class="w-full border rounded px-3 py-2"></textarea>
+    <div class="fade-in bg-white p-4 rounded-xl shadow-md border border-gray-100 relative">
+      <button class="absolute top-3 right-3 text-gray-400 hover:text-red-500 remove-section">✕</button>
+      <h2 class="text-lg font-semibold mb-3">💼 Experience</h2>
+      <input placeholder="Company" class="w-full border border-gray-200 rounded px-3 py-2 mb-2 focus:ring-2 focus:ring-blue-500" />
+      <input placeholder="Role" class="w-full border border-gray-200 rounded px-3 py-2 mb-2 focus:ring-2 focus:ring-blue-500" />
+      <textarea placeholder="Details" rows="3" class="w-full border border-gray-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"></textarea>
     </div>
   `
 };
 
 // ============================================================
-// UI logic
+// Main Logic
 // ============================================================
-
-// Dropdown or random section type
-const sectionKeys = Object.keys(sectionTemplates);
 const addBtn = document.getElementById("addSection");
 const container = document.getElementById("sections");
 
-// 🔹 Add new section
 addBtn.addEventListener("click", () => {
+  // Fancy selection modal using prompt for now (later: bottom sheet)
   const next = prompt("Which section to add? (project / education / experience)");
   const type = sectionTemplates[next?.toLowerCase()];
   if (type) {
     container.insertAdjacentHTML("beforeend", type);
+    scrollToBottomSmooth();
   } else {
     alert("Invalid section type.");
   }
 });
 
-// 🔹 Remove section
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("remove-section")) {
     e.target.closest("div").remove();
@@ -60,7 +56,7 @@ document.addEventListener("click", (e) => {
 });
 
 // ============================================================
-// PDF generation stub (connect later to Hugging Face API)
+// PDF Generation Stub (later connect to Hugging Face)
 // ============================================================
 document.getElementById("generatePDF").addEventListener("click", async () => {
   const sections = [...container.children].map((sec) => {
@@ -73,12 +69,15 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
   });
 
   console.log("🧾 Resume JSON:", sections);
-
   alert("✅ Resume data collected. (Next: Send to Hugging Face for PDF)");
-  // Later:
-  // const res = await fetch("https://huggingface.co/spaces/your-space/api/predict", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify({ data: [JSON.stringify(sections)] }),
-  // });
 });
+
+// ============================================================
+// Helpers
+// ============================================================
+function scrollToBottomSmooth() {
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth",
+  });
+}
