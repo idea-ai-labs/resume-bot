@@ -32,19 +32,42 @@ h1 {
   background: linear-gradient(135deg, #4b6cb7, #182848);
   color: #fff;
   margin: 0;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toggle-icon {
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.toggle-icon:hover {
+  background: rgba(255,255,255,0.35);
 }
 
 .section-content {
   padding: 1rem;
   display: block;
-  transition: max-height 0.3s ease;
+  transition: max-height 0.35s ease, padding 0.35s ease;
+  max-height: 2000px; /* large default for smooth expand */
 }
 
 .section-content.collapsed {
-  display: none;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 /* Cards */
@@ -52,6 +75,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  transition: all 0.3s ease;
 }
 
 .card {
@@ -62,6 +86,20 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.card.enter {
+  transform: scale(0.95);
+  opacity: 0;
+  animation: card-enter 0.2s forwards;
+}
+
+@keyframes card-enter {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .card input, .card textarea {
@@ -73,7 +111,7 @@ h1 {
 }
 
 .card textarea {
-  min-height: 80px; /* bigger areas for experience & project */
+  min-height: 80px;
   resize: vertical;
 }
 
@@ -104,13 +142,13 @@ h1 {
 }
 
 .generate-btn {
-  background: #007bff;
+  background: #28a745; /* green */
   color: white;
   width: 100%;
   font-size: 1.1rem;
 }
 .generate-btn:hover {
-  background: #0056b3;
+  background: #218838;
 }
 
 /* Debug log */
@@ -119,7 +157,7 @@ h1 {
 }
 #log-box {
   width: 100%;
-  height: 200px; /* increased size */
+  height: 200px;
   font-size: 0.9rem;
   background: #f7f7f7;
   border: 1px solid #ccc;
