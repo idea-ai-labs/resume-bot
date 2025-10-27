@@ -225,7 +225,7 @@ async function generatePDF() {
   logDebug("📤 Sending data to backend...");
 
   // Use same domain, just different endpoint for backend
-  const API_URL = `${window.location.origin}/api/generate`;
+  const API_URL = `https://idea-ai-resumelatex.hf.space/api/generate`;
 
   // Prevent multiple clicks
   if (document.getElementById("spinner-overlay")) {
