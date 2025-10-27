@@ -11,35 +11,45 @@
     <h1>🧾 Hex Resume Builder</h1>
 
     <section class="section">
-      <h2>Basic Info</h2>
-      <input id="name" placeholder="Full Name" />
-      <input id="email" placeholder="Email" />
-      <input id="phone" placeholder="Phone" />
-      <input id="website" placeholder="Website / LinkedIn" />
+      <h2 class="section-header">Basic Info</h2>
+      <div class="section-content">
+        <input id="name" placeholder="Full Name" />
+        <input id="email" placeholder="Email" />
+        <input id="phone" placeholder="Phone" />
+        <input id="website" placeholder="Website / LinkedIn" />
+      </div>
     </section>
 
     <section class="section">
-      <h2>Education</h2>
-      <div id="education-cards" class="cards"></div>
-      <button id="add-education-btn" class="add-btn">+ Add Education</button>
+      <h2 class="section-header">Education</h2>
+      <div class="section-content">
+        <div id="education-cards" class="cards"></div>
+        <button id="add-education-btn" class="add-btn">+ Add Education</button>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Experience</h2>
-      <div id="experience-cards" class="cards"></div>
-      <button id="add-experience-btn" class="add-btn">+ Add Experience</button>
+      <h2 class="section-header">Experience</h2>
+      <div class="section-content">
+        <div id="experience-cards" class="cards"></div>
+        <button id="add-experience-btn" class="add-btn">+ Add Experience</button>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Projects</h2>
-      <div id="projects-cards" class="cards"></div>
-      <button id="add-project-btn" class="add-btn">+ Add Project</button>
+      <h2 class="section-header">Projects</h2>
+      <div class="section-content">
+        <div id="projects-cards" class="cards"></div>
+        <button id="add-project-btn" class="add-btn">+ Add Project</button>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Skills</h2>
-      <div id="skills-cards" class="cards"></div>
-      <button id="add-skill-btn" class="add-btn">+ Add Skill</button>
+      <h2 class="section-header">Skills</h2>
+      <div class="section-content">
+        <div id="skills-cards" class="cards"></div>
+        <button id="add-skill-btn" class="add-btn">+ Add Skill</button>
+      </div>
     </section>
 
     <div class="actions">
@@ -53,5 +63,14 @@
   </div>
 
   <script src="resume.js"></script>
+  <script>
+    // Collapsible sections
+    document.querySelectorAll(".section-header").forEach(header => {
+      header.addEventListener("click", () => {
+        const content = header.nextElementSibling;
+        content.classList.toggle("collapsed");
+      });
+    });
+  </script>
 </body>
 </html>
