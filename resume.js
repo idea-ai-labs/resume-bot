@@ -20,7 +20,6 @@ const defaultResumeData = {
     { category: "Languages", items: ["Java", "Python", "C/C++", "SQL", "JavaScript"] }
   ]
 };
-
 // ------------------ Debug Log ------------------
 function logDebug(message) {
   const logBox = document.getElementById("log-box");
