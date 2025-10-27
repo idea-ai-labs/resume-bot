@@ -1,0 +1,165 @@
+/* Global styles */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f8f9fa;
+  color: #333;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 1rem;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Section styling */
+.section {
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.section-header {
+  background: linear-gradient(135deg, #4b6cb7, #182848);
+  color: #fff;
+  margin: 0;
+  padding: 1rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.section-content {
+  padding: 1rem;
+  display: block;
+  transition: max-height 0.3s ease;
+}
+
+.section-content.collapsed {
+  display: none;
+}
+
+/* Cards */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card {
+  background: #fefefe;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card input, .card textarea {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+.card textarea {
+  min-height: 80px; /* bigger areas for experience & project */
+  resize: vertical;
+}
+
+/* Buttons */
+.add-btn, .remove-btn, .generate-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.add-btn {
+  background: #e0e0e0;
+  color: #333;
+}
+.add-btn:hover {
+  background: #d0d0d0;
+}
+
+.remove-btn {
+  background: #ffcccc;
+  color: #900;
+}
+.remove-btn:hover {
+  background: #ffb3b3;
+}
+
+.generate-btn {
+  background: #007bff;
+  color: white;
+  width: 100%;
+  font-size: 1.1rem;
+}
+.generate-btn:hover {
+  background: #0056b3;
+}
+
+/* Debug log */
+.debug {
+  margin-top: 1.5rem;
+}
+#log-box {
+  width: 100%;
+  height: 200px; /* increased size */
+  font-size: 0.9rem;
+  background: #f7f7f7;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+  font-family: monospace;
+}
+
+/* Spinner overlay */
+#spinner-overlay {
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.spinner-container {
+  background:white;
+  padding:2rem;
+  border-radius:10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1rem;
+}
+
+.spinner {
+  width:40px;
+  height:40px;
+  border:5px solid #ccc;
+  border-top:5px solid #4b6cb7;
+  border-radius:50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform:rotate(0deg); }
+  100% { transform:rotate(360deg); }
+}
