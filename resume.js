@@ -222,15 +222,52 @@ function collectResumeData() {
 // ------------------------------
 async function generatePDF() {
   const resumeData = collectResumeData();
-  logDebug("Sending data to backend...");
+  logDebug("📤 Sending data to backend...");
 
-  const API_URL = "https://idea-ai-resumelatex.hf.space/generate";
-  //https://idea-ai-resumelatex.hf.space/proxy/5000/
+  // Use same domain, just different endpoint for backend
+  const API_URL = `${window.location.origin}/api/generate`;
 
-  // Show spinner
+  // Prevent multiple clicks
+  if (document.getElementById("spinner-overlay")) {
+    logDebug("⚠️ Already generating PDF — please wait...");
+    return;
+  }
+
+  // Show spinner overlay
   const spinner = document.createElement("div");
   spinner.id = "spinner-overlay";
   spinner.innerHTML = `
+    <style>
+      #spinner-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 9999;
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+      .spinner-container {
+        text-align: center;
+      }
+      .spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 10px;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
     <div class="spinner-container">
       <div class="spinner"></div>
       <p>Generating PDF...</p>
@@ -244,11 +281,11 @@ async function generatePDF() {
       body: JSON.stringify(resumeData)
     });
 
-    logDebug(`Response status: ${response.status}`);
+    logDebug(`📥 Response status: ${response.status}`);
 
     if (!response.ok) {
       const errText = await response.text();
-      logDebug(`Error response: ${errText}`);
+      logDebug(`❌ Error response: ${errText}`);
       alert("❌ Error generating PDF:\n" + errText);
       return;
     }
@@ -256,6 +293,7 @@ async function generatePDF() {
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
 
+    // Trigger download
     const link = document.createElement("a");
     link.href = url;
     link.download = "resume.pdf";
@@ -264,12 +302,13 @@ async function generatePDF() {
     link.remove();
 
     URL.revokeObjectURL(url);
-    logDebug("PDF downloaded successfully.");
+    logDebug("✅ PDF downloaded successfully.");
   } catch (error) {
-    console.error("Failed to connect:", error);
-    logDebug(`Failed to connect: ${error}`);
+    console.error("❌ Failed to connect:", error);
+    logDebug(`⚠️ Failed to connect: ${error.message}`);
     alert("⚠️ Failed to connect to backend.\n" + error.message);
   } finally {
+    // Always remove spinner
     document.getElementById("spinner-overlay")?.remove();
   }
 }
