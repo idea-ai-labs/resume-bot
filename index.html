@@ -11,7 +11,10 @@
     <h1>🧾 Hex Resume Builder</h1>
 
     <section class="section">
-      <h2 class="section-header">Basic Info</h2>
+      <h2 class="section-header">
+        Basic Info
+        <span class="toggle-icon">–</span>
+      </h2>
       <div class="section-content">
         <input id="name" placeholder="Full Name" />
         <input id="email" placeholder="Email" />
@@ -21,7 +24,10 @@
     </section>
 
     <section class="section">
-      <h2 class="section-header">Education</h2>
+      <h2 class="section-header">
+        Education
+        <span class="toggle-icon">–</span>
+      </h2>
       <div class="section-content">
         <div id="education-cards" class="cards"></div>
         <button id="add-education-btn" class="add-btn">+ Add Education</button>
@@ -29,7 +35,10 @@
     </section>
 
     <section class="section">
-      <h2 class="section-header">Experience</h2>
+      <h2 class="section-header">
+        Experience
+        <span class="toggle-icon">–</span>
+      </h2>
       <div class="section-content">
         <div id="experience-cards" class="cards"></div>
         <button id="add-experience-btn" class="add-btn">+ Add Experience</button>
@@ -37,7 +46,10 @@
     </section>
 
     <section class="section">
-      <h2 class="section-header">Projects</h2>
+      <h2 class="section-header">
+        Projects
+        <span class="toggle-icon">–</span>
+      </h2>
       <div class="section-content">
         <div id="projects-cards" class="cards"></div>
         <button id="add-project-btn" class="add-btn">+ Add Project</button>
@@ -45,7 +57,10 @@
     </section>
 
     <section class="section">
-      <h2 class="section-header">Skills</h2>
+      <h2 class="section-header">
+        Skills
+        <span class="toggle-icon">–</span>
+      </h2>
       <div class="section-content">
         <div id="skills-cards" class="cards"></div>
         <button id="add-skill-btn" class="add-btn">+ Add Skill</button>
@@ -64,11 +79,24 @@
 
   <script src="resume.js"></script>
   <script>
-    // Collapsible sections
+    // Collapsible sections with smooth transition
     document.querySelectorAll(".section-header").forEach(header => {
+      const icon = header.querySelector(".toggle-icon");
+      const content = header.nextElementSibling;
+
+      // Set max-height for smooth transitions
+      content.style.maxHeight = content.scrollHeight + "px";
+
       header.addEventListener("click", () => {
-        const content = header.nextElementSibling;
-        content.classList.toggle("collapsed");
+        if(content.classList.contains("collapsed")) {
+          content.classList.remove("collapsed");
+          content.style.maxHeight = content.scrollHeight + "px";
+          icon.textContent = '–';
+        } else {
+          content.classList.add("collapsed");
+          content.style.maxHeight = "0";
+          icon.textContent = '+';
+        }
       });
     });
   </script>
