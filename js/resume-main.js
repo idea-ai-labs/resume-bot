@@ -12,6 +12,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   renderResume(resumeData);
+  initSectionToggles();
 
   // ------------------ Hook up Add Buttons ------------------
   const addEduBtn = document.getElementById("add-education-btn");
