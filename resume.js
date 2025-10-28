@@ -69,32 +69,36 @@ const defaultResumeData = {
 // ------------------ Debug Log ------------------
 function logDebug(message) {
   const logBox = document.getElementById("log-box");
+  logBox.style.color = "limegreen";
   logBox.value += message + "\n";
   logBox.scrollTop = logBox.scrollHeight;
 }
 
 // ------------------ Storage ------------------
 function saveToLocalStorage() {
-  localStorage.setItem("resumeData", JSON.stringify(collectResumeData()));
-  logDebug("✅ Auto-saved resume data.");
+  const data = collectResumeData();
+  localStorage.setItem("resumeData", JSON.stringify(data));
+  logDebug("✅ Resume saved to localStorage");
 }
 
 function loadFromLocalStorage() {
   const data = localStorage.getItem("resumeData");
   if (!data) return null;
-  return JSON.parse(data);
+  try {
+    logDebug("📥 Resume loaded from localStorage");
+    return JSON.parse(data);
+  } catch (e) {
+    console.error("Failed to parse resume data:", e);
+    return null;
+  }
 }
 
-// ------------------ Utility to create inputs ------------------
+// ------------------ Utility functions ------------------
 function createInput(value, placeholder, onChange) {
   const input = document.createElement("input");
   input.value = value || "";
   input.placeholder = placeholder;
-  input.oninput = (e) => {
-    onChange(e.target.value);
-    saveToLocalStorage();
-    adjustSectionHeight(input.closest(".section-content"));
-  };
+  input.oninput = (e) => { onChange(e.target.value); saveToLocalStorage(); };
   return input;
 }
 
@@ -102,15 +106,10 @@ function createTextarea(value, placeholder, onChange) {
   const textarea = document.createElement("textarea");
   textarea.value = value || "";
   textarea.placeholder = placeholder;
-  textarea.oninput = (e) => {
-    onChange(e.target.value);
-    saveToLocalStorage();
-    adjustSectionHeight(textarea.closest(".section-content"));
-  };
+  textarea.oninput = (e) => { onChange(e.target.value); saveToLocalStorage(); };
   return textarea;
 }
 
-// ------------------ Utility to create remove button ------------------
 function createRemoveButton(card) {
   const btn = document.createElement("button");
   btn.type = "button";
@@ -119,9 +118,16 @@ function createRemoveButton(card) {
   btn.onclick = () => {
     card.remove();
     saveToLocalStorage();
-    adjustSectionHeight(card.closest(".section-content"));
+    adjustSectionHeight(card.closest(".section"));
   };
   return btn;
+}
+
+function adjustSectionHeight(section) {
+  const content = section.querySelector(".section-content");
+  if (!content.classList.contains("collapsed")) {
+    content.style.maxHeight = content.scrollHeight + "px";
+  }
 }
 
 // ------------------ Add Cards ------------------
@@ -135,9 +141,10 @@ function addEducationCard(data) {
   const degreeInput = createInput(data?.degree, "Degree", val => card.dataset.degree = val);
   const datesInput = createInput(data?.dates, "Dates", val => card.dataset.dates = val);
 
-  card.append(schoolInput, locationInput, degreeInput, datesInput, createRemoveButton(card));
+  card.append(schoolInput, locationInput, degreeInput, datesInput);
+  card.appendChild(createRemoveButton(card));
   container.appendChild(card);
-  adjustSectionHeight(container.closest(".section-content"));
+  adjustSectionHeight(container.closest(".section"));
 }
 
 function addExperienceCard(data) {
@@ -149,12 +156,12 @@ function addExperienceCard(data) {
   const companyInput = createInput(data?.company, "Company", val => card.dataset.company = val);
   const locationInput = createInput(data?.location, "Location", val => card.dataset.location = val);
   const datesInput = createInput(data?.dates, "Dates", val => card.dataset.dates = val);
-
   const detailsInput = createTextarea((data?.details || []).join("\n"), "Details (one per line)", val => card.dataset.details = val.split("\n"));
 
-  card.append(titleInput, companyInput, locationInput, datesInput, detailsInput, createRemoveButton(card));
+  card.append(titleInput, companyInput, locationInput, datesInput, detailsInput);
+  card.appendChild(createRemoveButton(card));
   container.appendChild(card);
-  adjustSectionHeight(container.closest(".section-content"));
+  adjustSectionHeight(container.closest(".section"));
 }
 
 function addProjectCard(data) {
@@ -163,11 +170,12 @@ function addProjectCard(data) {
   card.className = "card";
 
   const titleInput = createInput(data?.title, "Project Title", val => card.dataset.title = val);
-  const descInput = createTextarea(data?.description, "Description", val => card.dataset.description = val);
+  const descInput = createInput(data?.description, "Description", val => card.dataset.description = val);
 
-  card.append(titleInput, descInput, createRemoveButton(card));
+  card.append(titleInput, descInput);
+  card.appendChild(createRemoveButton(card));
   container.appendChild(card);
-  adjustSectionHeight(container.closest(".section-content"));
+  adjustSectionHeight(container.closest(".section"));
 }
 
 function addSkillCard(data) {
@@ -178,9 +186,10 @@ function addSkillCard(data) {
   const categoryInput = createInput(data?.category, "Category", val => card.dataset.category = val);
   const itemsInput = createInput((data?.items || []).join(", "), "Comma-separated skills", val => card.dataset.items = val.split(",").map(s => s.trim()));
 
-  card.append(categoryInput, itemsInput, createRemoveButton(card));
+  card.append(categoryInput, itemsInput);
+  card.appendChild(createRemoveButton(card));
   container.appendChild(card);
-  adjustSectionHeight(container.closest(".section-content"));
+  adjustSectionHeight(container.closest(".section"));
 }
 
 // ------------------ Collect Data ------------------
@@ -218,14 +227,34 @@ function collectResumeData() {
   return { name, contact: { email, phone, website }, education, experience, projects, skills };
 }
 
-// ------------------ PDF ------------------
+// ------------------ Collapsible Sections ------------------
+function setupCollapsible(section) {
+  const headerDiv = section.querySelector(".section-header");
+  const content = section.querySelector(".section-content");
+  const icon = headerDiv.querySelector(".toggle-icon");
+  if (!headerDiv || !content || !icon) return;
+
+  if (!content.classList.contains("collapsed")) {
+    content.style.maxHeight = content.scrollHeight + "px";
+    icon.textContent = "−";
+  } else {
+    content.style.maxHeight = "0";
+    icon.textContent = "+";
+  }
+
+  headerDiv.addEventListener("click", () => {
+    const isCollapsed = content.classList.toggle("collapsed");
+    content.style.maxHeight = isCollapsed ? "0" : content.scrollHeight + "px";
+    icon.textContent = isCollapsed ? "+" : "−";
+  });
+}
+
+// ------------------ Generate PDF ------------------
 async function generatePDF() {
   const resumeData = collectResumeData();
   logDebug("Sending data to backend...");
-  logDebug(JSON.stringify(resumeData, null, 2));
 
   const API_URL = "https://idea-ai-resumelatex.hf.space/api/generate";
-
   const spinner = document.createElement("div");
   spinner.id = "spinner-overlay";
   spinner.innerHTML = `
@@ -244,7 +273,6 @@ async function generatePDF() {
 
     if (!response.ok) {
       const errText = await response.text();
-      logDebug(`Error: ${errText}`);
       alert("❌ Error generating PDF:\n" + errText);
       return;
     }
@@ -258,85 +286,51 @@ async function generatePDF() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    logDebug("✅ PDF downloaded.");
-  } catch (err) {
-    console.error(err);
-    logDebug(`Failed to connect: ${err}`);
-    alert("⚠️ Failed to connect to backend.\n" + err.message);
+    logDebug("✅ PDF downloaded successfully.");
+  } catch (error) {
+    console.error(error);
+    logDebug(`Failed to connect: ${error}`);
+    alert("⚠️ Failed to connect to backend.\n" + error.message);
   } finally {
     document.getElementById("spinner-overlay")?.remove();
   }
 }
 
-// ------------------ Collapsible Sections ------------------
-function setupCollapsible(section) {
-  const headerDiv = section.querySelector(".section-header");
-  const content = section.querySelector(".section-content");
-  const icon = headerDiv.querySelector(".toggle-icon");
-  if (!headerDiv || !content || !icon) return;
-
-  // Initial state
-  content.style.maxHeight = content  .classList.contains("collapsed") ? "0" : content.scrollHeight + "px";
-  icon.textContent = content.classList.contains("collapsed") ? "+" : "−";
-
-  // Toggle on click
-  headerDiv.addEventListener("click", () => {
-    const isCollapsed = content.classList.toggle("collapsed");
-    content.style.maxHeight = isCollapsed ? "0" : content.scrollHeight + "px";
-    icon.textContent = isCollapsed ? "+" : "−";
-  });
-}
-
-// ------------------ Adjust Section Height Dynamically ------------------
-function adjustSectionHeight(sectionContent) {
-  if (!sectionContent) return;
-  sectionContent.style.maxHeight = sectionContent.classList.contains("collapsed") ? "0" : sectionContent.scrollHeight + "px";
-}
-
 // ------------------ Initialize UI ------------------
 window.onload = () => {
-  let resumeData = loadFromLocalStorage();
-  if (resumeData) {
-    logDebug("✅ Loaded resume from storage.");
-  } else {
-    logDebug("ℹ️ No saved data found, using defaultResumeData.");
-    resumeData = defaultResumeData;
-  }
+  let resumeData = loadFromLocalStorage() || defaultResumeData;
 
-  // Populate basic info
   document.getElementById("name").value = resumeData.name;
   document.getElementById("email").value = resumeData.contact.email;
   document.getElementById("phone").value = resumeData.contact.phone;
   document.getElementById("website").value = resumeData.contact.website;
 
-  // Populate sections
-  resumeData.education.forEach(addEducationCard);
-  resumeData.experience.forEach(addExperienceCard);
-  resumeData.projects.forEach(addProjectCard);
-  resumeData.skills.forEach(addSkillCard);
+  (resumeData.education || []).forEach(addEducationCard);
+  (resumeData.experience || []).forEach(addExperienceCard);
+  (resumeData.projects || []).forEach(addProjectCard);
+  (resumeData.skills || []).forEach(addSkillCard);
 
-  // Setup collapsible sections
   document.querySelectorAll(".section").forEach(section => setupCollapsible(section));
 
-  // Attach button handlers
-  document.getElementById("generate-btn").onclick = generatePDF;
   document.getElementById("add-education-btn").onclick = () => addEducationCard({});
   document.getElementById("add-experience-btn").onclick = () => addExperienceCard({});
   document.getElementById("add-project-btn").onclick = () => addProjectCard({});
   document.getElementById("add-skill-btn").onclick = () => addSkillCard({});
 
-  // Auto-save for basic info
-  ["name", "email", "phone", "website"].forEach(id => {
+  document.getElementById("generate-btn").onclick = generatePDF;
+
+  ["name","email","phone","website"].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener("input", saveToLocalStorage);
+    if(el) el.addEventListener("input", saveToLocalStorage);
   });
+
+  logDebug("🚀 Resume UI initialized");
 };
 
-// ------------------ Export functions globally for HTML buttons ------------------
+// Export functions to global scope if needed
 window.addEducationCard = addEducationCard;
 window.addExperienceCard = addExperienceCard;
 window.addProjectCard = addProjectCard;
 window.addSkillCard = addSkillCard;
 window.collectResumeData = collectResumeData;
 window.generatePDF = generatePDF;
-window.logDebug = logDebug;
