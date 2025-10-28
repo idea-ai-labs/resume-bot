@@ -213,32 +213,35 @@ function renderResume(data) {
   clearAndPopulate("skills-cards", addSkillCard, data.skills);
 }
 
-// ------------------------------
-// Section Collapse / Expand Logic
-// ------------------------------
-function initSectionToggles() {
-  const sections = document.querySelectorAll(".section");
+// ------------------ Collapsible Sections ------------------
+function setupCollapsible(section) {
+  const headerDiv = section.querySelector(".section-header");
+  const content = section.querySelector(".section-content");
+  const icon = headerDiv.querySelector(".toggle-icon"); 
+  if (!headerDiv || !content || !icon) return;
 
-  sections.forEach(section => {
-    const header = section.querySelector(".section-header");
-    const content = section.querySelector(".section-content");
-    const icon = section.querySelector(".toggle-icon");
+  // Set initial state
+  if (!content.classList.contains("collapsed")) {
+    content.style.maxHeight = content.scrollHeight + "px";
+    icon.textContent = "−";
+  } else {
+    content.style.maxHeight = "0";
+    icon.textContent = "+";
+  }
 
-    if (header && content && icon) {
-      header.addEventListener("click", () => {
-        section.classList.toggle("collapsed");
-
-        if (section.classList.contains("collapsed")) {
-          content.style.display = "none";
-          icon.textContent = "+";
-        } else {
-          content.style.display = "block";
-          icon.textContent = "−";
-        }
-      });
-    }
+  // Toggle on click
+  headerDiv.addEventListener("click", () => {
+    const isCollapsed = content.classList.toggle("collapsed");
+    content.style.maxHeight = isCollapsed ? "0" : content.scrollHeight + "px";
+    icon.textContent = isCollapsed ? "+" : "−";
   });
 }
+
+// ------------------ Initialize Collapsibles for all sections ------------------
+function initSectionCollapsibles() {
+  document.querySelectorAll(".section").forEach(section => setupCollapsible(section));
+}
+
 // export functions to global scope if module system is not used
 window.addEducationCard = addEducationCard;
 window.addExperienceCard = addExperienceCard;
