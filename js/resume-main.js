@@ -1,5 +1,8 @@
 // resume-main.js
 // Entry point – initializes resume builder and event wiring with debug logs
+debugLog("🧠 resume-main.js file loaded");
+console.log("🧠 resume-main.js executing");
+alert("resume-main.js executing");
 
 window.addEventListener("DOMContentLoaded", () => {
   debugLog("✅ NextGen Resume Lab loaded");
