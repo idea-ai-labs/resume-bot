@@ -1,5 +1,6 @@
 // resume-ui.js
 // UI utilities: create inputs/textareas, add/remove cards, collect data
+// Includes working expand/collapse toggle for all cards
 // NOTE: relies on saveToLocalStorage() being available from resume-storage.js
 
 // ------------------ Helpers ------------------
@@ -33,7 +34,6 @@ function createRemoveButton(card) {
   btn.className = "remove-btn";
   btn.textContent = "Remove";
   btn.addEventListener("click", () => {
-    // small visual cue then remove
     card.style.transition = "all 0.12s ease";
     card.style.opacity = "0";
     card.style.transform = "scale(0.98)";
@@ -43,6 +43,22 @@ function createRemoveButton(card) {
     }, 120);
   });
   return btn;
+}
+
+function addToggleButton(card) {
+  const toggleBtn = document.createElement("button");
+  toggleBtn.type = "button";
+  toggleBtn.className = "toggle-btn";
+  toggleBtn.textContent = "-"; // initially expanded
+  toggleBtn.addEventListener("click", () => {
+    const contentElements = Array.from(card.children).filter(
+      c => !c.classList.contains("toggle-btn") && !c.classList.contains("remove-btn")
+    );
+    const isCollapsed = contentElements[0].style.display === "none";
+    contentElements.forEach(c => c.style.display = isCollapsed ? "block" : "none");
+    toggleBtn.textContent = isCollapsed ? "-" : "+";
+  });
+  card.insertBefore(toggleBtn, card.firstChild);
 }
 
 // ------------------ Add Card Functions ------------------
@@ -63,10 +79,9 @@ function addEducationCard(data = {}) {
   card.appendChild(degreeInput);
   card.appendChild(datesInput);
   card.appendChild(createRemoveButton(card));
+  addToggleButton(card);
 
   container.appendChild(card);
-
-  // autosave after adding
   saveToLocalStorage && saveToLocalStorage();
   return card;
 }
@@ -90,10 +105,9 @@ function addExperienceCard(data = {}) {
   card.appendChild(datesInput);
   card.appendChild(detailsTa);
   card.appendChild(createRemoveButton(card));
+  addToggleButton(card);
 
   container.appendChild(card);
-
-  // autosave after adding
   saveToLocalStorage && saveToLocalStorage();
   return card;
 }
@@ -111,10 +125,9 @@ function addProjectCard(data = {}) {
   card.appendChild(titleInput);
   card.appendChild(descTa);
   card.appendChild(createRemoveButton(card));
+  addToggleButton(card);
 
   container.appendChild(card);
-
-  // autosave after adding
   saveToLocalStorage && saveToLocalStorage();
   return card;
 }
@@ -132,10 +145,9 @@ function addSkillCard(data = {}) {
   card.appendChild(categoryInput);
   card.appendChild(itemsInput);
   card.appendChild(createRemoveButton(card));
+  addToggleButton(card);
 
   container.appendChild(card);
-
-  // autosave after adding
   saveToLocalStorage && saveToLocalStorage();
   return card;
 }
@@ -160,36 +172,35 @@ function collectResumeData() {
   const skillsContainer = document.getElementById("skills-cards");
 
   const education = educationContainer ? Array.from(educationContainer.children).map(card => ({
-    school: card.children[0]?.value || "",
-    location: card.children[1]?.value || "",
-    degree: card.children[2]?.value || "",
-    dates: card.children[3]?.value || ""
+    school: card.children[1]?.value || "",
+    location: card.children[2]?.value || "",
+    degree: card.children[3]?.value || "",
+    dates: card.children[4]?.value || ""
   })) : [];
 
   const experience = experienceContainer ? Array.from(experienceContainer.children).map(card => ({
-    title: card.children[0]?.value || "",
-    company: card.children[1]?.value || "",
-    location: card.children[2]?.value || "",
-    dates: card.children[3]?.value || "",
-    details: (card.children[4] && card.children[4].value) ? card.children[4].value.split("\n").map(s => s.trim()).filter(Boolean) : []
+    title: card.children[1]?.value || "",
+    company: card.children[2]?.value || "",
+    location: card.children[3]?.value || "",
+    dates: card.children[4]?.value || "",
+    details: (card.children[5] && card.children[5].value) ? card.children[5].value.split("\n").map(s => s.trim()).filter(Boolean) : []
   })) : [];
 
   const projects = projectsContainer ? Array.from(projectsContainer.children).map(card => ({
-    title: card.children[0]?.value || "",
-    description: card.children[1] ? card.children[1].value : ""
+    title: card.children[1]?.value || "",
+    description: card.children[2] ? card.children[2].value : ""
   })) : [];
 
   const skills = skillsContainer ? Array.from(skillsContainer.children).map(card => ({
-    category: card.children[0]?.value || "",
-    items: (card.children[1] && card.children[1].value) ? card.children[1].value.split(",").map(s => s.trim()).filter(Boolean) : []
+    category: card.children[1]?.value || "",
+    items: (card.children[2] && card.children[2].value) ? card.children[2].value.split(",").map(s => s.trim()).filter(Boolean) : []
   })) : [];
 
   return { name, contact, education, experience, projects, skills };
 }
 
-// ------------------ Render helpers (used by resume-main.js) ------------------
+// ------------------ Render helpers ------------------
 function renderResume(data) {
-  // populate basic inputs
   const nameEl = document.getElementById("name");
   const emailEl = document.getElementById("email");
   const phoneEl = document.getElementById("phone");
@@ -199,7 +210,6 @@ function renderResume(data) {
   if (phoneEl) phoneEl.value = data.contact?.phone || "";
   if (websiteEl) websiteEl.value = data.contact?.website || "";
 
-  // clear existing cards, then add from data
   const clearAndPopulate = (containerId, addFunc, items) => {
     const c = document.getElementById(containerId);
     if (!c) return;
@@ -213,7 +223,7 @@ function renderResume(data) {
   clearAndPopulate("skills-cards", addSkillCard, data.skills);
 }
 
-// export functions to global scope if module system is not used
+// ------------------ Export to global scope ------------------
 window.addEducationCard = addEducationCard;
 window.addExperienceCard = addExperienceCard;
 window.addProjectCard = addProjectCard;
