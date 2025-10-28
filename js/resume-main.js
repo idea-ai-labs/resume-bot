@@ -1,38 +1,17 @@
 // resume-main.js
-// Entry point – initializes resume builder and event wiring with debug logs
-debugLog("🧠 resume-main.js file loaded");
-console.log("🧠 resume-main.js executing");
-alert("resume-main.js executing");
+// Entry point – initializes resume builder and event wiring
 
 window.addEventListener("DOMContentLoaded", () => {
-  debugLog("✅ NextGen Resume Lab loaded");
-
-  // --- Diagnostic: check what’s available ---
-  debugLog("defaultResumeData exists?", typeof defaultResumeData !== "undefined");
-  debugLog("renderResume exists?", typeof renderResume !== "undefined");
-  debugLog("collectResumeData exists?", typeof collectResumeData !== "undefined");
-  debugLog("saveToLocalStorage exists?", typeof saveToLocalStorage !== "undefined");
-  debugLog("loadFromLocalStorage exists?", typeof loadFromLocalStorage !== "undefined");
-
-  debugLog("localStorage keys:", Object.keys(localStorage));
-  debugLog("resumeData raw (from localStorage):", localStorage.getItem("resumeData"));
+  console.log("NextGen Resume Lab loaded");
 
   // ------------------ Load from localStorage ------------------
   let resumeData = loadFromLocalStorage();
   if (!resumeData) {
-    debugLog("⚠️ No saved data found, using defaultResumeData");
+    console.log("No saved data found, using defaultResumeData");
     resumeData = defaultResumeData;
-  } else {
-    debugLog("✅ Loaded data from localStorage successfully");
   }
 
-  // ------------------ Render Resume ------------------
-  try {
-    renderResume(resumeData);
-    debugLog("✅ renderResume executed");
-  } catch (err) {
-    debugLog("❌ renderResume failed:", err);
-  }
+  renderResume(resumeData);
 
   // ------------------ Hook up Add Buttons ------------------
   const addEduBtn = document.getElementById("add-education-btn");
@@ -40,44 +19,19 @@ window.addEventListener("DOMContentLoaded", () => {
   const addProjBtn = document.getElementById("add-project-btn");
   const addSkillBtn = document.getElementById("add-skill-btn");
 
-  if (addEduBtn) {
-    addEduBtn.onclick = () => {
-      debugLog("➕ Adding Education Card");
-      addEducationCard({});
-      saveToLocalStorage();
-    };
-  }
-  if (addExpBtn) {
-    addExpBtn.onclick = () => {
-      debugLog("➕ Adding Experience Card");
-      addExperienceCard({});
-      saveToLocalStorage();
-    };
-  }
-  if (addProjBtn) {
-    addProjBtn.onclick = () => {
-      debugLog("➕ Adding Project Card");
-      addProjectCard({});
-      saveToLocalStorage();
-    };
-  }
-  if (addSkillBtn) {
-    addSkillBtn.onclick = () => {
-      debugLog("➕ Adding Skill Card");
-      addSkillCard({});
-      saveToLocalStorage();
-    };
-  }
+  if (addEduBtn) addEduBtn.onclick = () => { addEducationCard({}); saveToLocalStorage(); };
+  if (addExpBtn) addExpBtn.onclick = () => { addExperienceCard({}); saveToLocalStorage(); };
+  if (addProjBtn) addProjBtn.onclick = () => { addProjectCard({}); saveToLocalStorage(); };
+  if (addSkillBtn) addSkillBtn.onclick = () => { addSkillCard({}); saveToLocalStorage(); };
 
   // ------------------ Generate PDF ------------------
   const generateBtn = document.getElementById("generate-btn");
   if (generateBtn) {
     generateBtn.onclick = async () => {
       const resumeData = collectResumeData();
-      debugLog("🧾 Generating PDF with data:", resumeData);
+      console.log("Generating PDF with data:", resumeData);
 
       const API_URL = "https://idea-ai-resumelatex.hf.space/api/generate";
-
       const spinner = document.createElement("div");
       spinner.id = "spinner-overlay";
       spinner.innerHTML = `
@@ -97,7 +51,6 @@ window.addEventListener("DOMContentLoaded", () => {
         if (!response.ok) {
           const errText = await response.text();
           alert("❌ Error generating PDF:\n" + errText);
-          debugLog("❌ PDF generation failed:", errText);
           return;
         }
 
@@ -110,9 +63,8 @@ window.addEventListener("DOMContentLoaded", () => {
         link.click();
         link.remove();
         URL.revokeObjectURL(url);
-        debugLog("✅ PDF generated successfully");
       } catch (error) {
-        debugLog("⚠️ Failed to connect to backend:", error);
+        console.error("Failed to connect:", error);
         alert("⚠️ Failed to connect to backend.\n" + error.message);
       } finally {
         document.getElementById("spinner-overlay")?.remove();
@@ -121,15 +73,9 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------ Auto-save on input changes ------------------
+  // (For name/email/phone/website inputs)
   ["name", "email", "phone", "website"].forEach(id => {
     const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", () => {
-        saveToLocalStorage();
-        debugLog(`💾 Auto-saved change in ${id}`);
-      });
-    }
+    if (el) el.addEventListener("input", () => saveToLocalStorage());
   });
-
-  debugLog("✅ Initialization complete");
 });
