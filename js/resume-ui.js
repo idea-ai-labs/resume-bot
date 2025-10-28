@@ -1,7 +1,6 @@
 // resume-ui.js
 // UI utilities: create inputs/textareas, add/remove cards, collect data
-// Includes working expand/collapse toggle for all cards
-// NOTE: relies on saveToLocalStorage() being available from resume-storage.js
+// Card-level collapse removed; section-level collapse remains via HTML + resume-main.js
 
 // ------------------ Helpers ------------------
 function createInput(placeholder, value = "") {
@@ -45,22 +44,6 @@ function createRemoveButton(card) {
   return btn;
 }
 
-function addToggleButton(card) {
-  const toggleBtn = document.createElement("button");
-  toggleBtn.type = "button";
-  toggleBtn.className = "toggle-btn";
-  toggleBtn.textContent = "-"; // initially expanded
-  toggleBtn.addEventListener("click", () => {
-    const contentElements = Array.from(card.children).filter(
-      c => !c.classList.contains("toggle-btn") && !c.classList.contains("remove-btn")
-    );
-    const isCollapsed = contentElements[0].style.display === "none";
-    contentElements.forEach(c => c.style.display = isCollapsed ? "block" : "none");
-    toggleBtn.textContent = isCollapsed ? "-" : "+";
-  });
-  card.insertBefore(toggleBtn, card.firstChild);
-}
-
 // ------------------ Add Card Functions ------------------
 function addEducationCard(data = {}) {
   const container = document.getElementById("education-cards");
@@ -69,17 +52,11 @@ function addEducationCard(data = {}) {
   const card = document.createElement("div");
   card.className = "card";
 
-  const schoolInput = createInput("School Name", data.school || "");
-  const locationInput = createInput("Location", data.location || "");
-  const degreeInput = createInput("Degree", data.degree || "");
-  const datesInput = createInput("Dates", data.dates || "");
-
-  card.appendChild(schoolInput);
-  card.appendChild(locationInput);
-  card.appendChild(degreeInput);
-  card.appendChild(datesInput);
+  card.appendChild(createInput("School Name", data.school || ""));
+  card.appendChild(createInput("Location", data.location || ""));
+  card.appendChild(createInput("Degree", data.degree || ""));
+  card.appendChild(createInput("Dates", data.dates || ""));
   card.appendChild(createRemoveButton(card));
-  addToggleButton(card);
 
   container.appendChild(card);
   saveToLocalStorage && saveToLocalStorage();
@@ -93,19 +70,12 @@ function addExperienceCard(data = {}) {
   const card = document.createElement("div");
   card.className = "card";
 
-  const titleInput = createInput("Job Title", data.title || "");
-  const companyInput = createInput("Company", data.company || "");
-  const locationInput = createInput("Location", data.location || "");
-  const datesInput = createInput("Dates", data.dates || "");
-  const detailsTa = createTextArea("Details (one per line)", (data.details || []).join("\n"), 6);
-
-  card.appendChild(titleInput);
-  card.appendChild(companyInput);
-  card.appendChild(locationInput);
-  card.appendChild(datesInput);
-  card.appendChild(detailsTa);
+  card.appendChild(createInput("Job Title", data.title || ""));
+  card.appendChild(createInput("Company", data.company || ""));
+  card.appendChild(createInput("Location", data.location || ""));
+  card.appendChild(createInput("Dates", data.dates || ""));
+  card.appendChild(createTextArea("Details (one per line)", (data.details || []).join("\n"), 6));
   card.appendChild(createRemoveButton(card));
-  addToggleButton(card);
 
   container.appendChild(card);
   saveToLocalStorage && saveToLocalStorage();
@@ -119,13 +89,9 @@ function addProjectCard(data = {}) {
   const card = document.createElement("div");
   card.className = "card";
 
-  const titleInput = createInput("Project Title", data.title || "");
-  const descTa = createTextArea("Description", data.description || "", 5);
-
-  card.appendChild(titleInput);
-  card.appendChild(descTa);
+  card.appendChild(createInput("Project Title", data.title || ""));
+  card.appendChild(createTextArea("Description", data.description || "", 5));
   card.appendChild(createRemoveButton(card));
-  addToggleButton(card);
 
   container.appendChild(card);
   saveToLocalStorage && saveToLocalStorage();
@@ -139,13 +105,9 @@ function addSkillCard(data = {}) {
   const card = document.createElement("div");
   card.className = "card";
 
-  const categoryInput = createInput("Category", data.category || "");
-  const itemsInput = createInput("Comma-separated skills", (data.items || []).join(", "));
-
-  card.appendChild(categoryInput);
-  card.appendChild(itemsInput);
+  card.appendChild(createInput("Category", data.category || ""));
+  card.appendChild(createInput("Comma-separated skills", (data.items || []).join(", ")));
   card.appendChild(createRemoveButton(card));
-  addToggleButton(card);
 
   container.appendChild(card);
   saveToLocalStorage && saveToLocalStorage();
@@ -166,35 +128,35 @@ function collectResumeData() {
     website: websiteEl ? websiteEl.value : ""
   };
 
-  const educationContainer = document.getElementById("education-cards");
-  const experienceContainer = document.getElementById("experience-cards");
-  const projectsContainer = document.getElementById("projects-cards");
-  const skillsContainer = document.getElementById("skills-cards");
+  const getCardsData = (containerId, mapFn) => {
+    const container = document.getElementById(containerId);
+    return container ? Array.from(container.children).map(mapFn) : [];
+  };
 
-  const education = educationContainer ? Array.from(educationContainer.children).map(card => ({
-    school: card.children[1]?.value || "",
-    location: card.children[2]?.value || "",
-    degree: card.children[3]?.value || "",
-    dates: card.children[4]?.value || ""
-  })) : [];
+  const education = getCardsData("education-cards", card => ({
+    school: card.children[0].value,
+    location: card.children[1].value,
+    degree: card.children[2].value,
+    dates: card.children[3].value
+  }));
 
-  const experience = experienceContainer ? Array.from(experienceContainer.children).map(card => ({
-    title: card.children[1]?.value || "",
-    company: card.children[2]?.value || "",
-    location: card.children[3]?.value || "",
-    dates: card.children[4]?.value || "",
-    details: (card.children[5] && card.children[5].value) ? card.children[5].value.split("\n").map(s => s.trim()).filter(Boolean) : []
-  })) : [];
+  const experience = getCardsData("experience-cards", card => ({
+    title: card.children[0].value,
+    company: card.children[1].value,
+    location: card.children[2].value,
+    dates: card.children[3].value,
+    details: card.children[4].value.split("\n").map(s => s.trim()).filter(Boolean)
+  }));
 
-  const projects = projectsContainer ? Array.from(projectsContainer.children).map(card => ({
-    title: card.children[1]?.value || "",
-    description: card.children[2] ? card.children[2].value : ""
-  })) : [];
+  const projects = getCardsData("projects-cards", card => ({
+    title: card.children[0].value,
+    description: card.children[1].value
+  }));
 
-  const skills = skillsContainer ? Array.from(skillsContainer.children).map(card => ({
-    category: card.children[1]?.value || "",
-    items: (card.children[2] && card.children[2].value) ? card.children[2].value.split(",").map(s => s.trim()).filter(Boolean) : []
-  })) : [];
+  const skills = getCardsData("skills-cards", card => ({
+    category: card.children[0].value,
+    items: card.children[1].value.split(",").map(s => s.trim()).filter(Boolean)
+  }));
 
   return { name, contact, education, experience, projects, skills };
 }
