@@ -213,6 +213,32 @@ function renderResume(data) {
   clearAndPopulate("skills-cards", addSkillCard, data.skills);
 }
 
+// ------------------------------
+// Section Collapse / Expand Logic
+// ------------------------------
+function initSectionToggles() {
+  const sections = document.querySelectorAll(".section");
+
+  sections.forEach(section => {
+    const header = section.querySelector(".section-header");
+    const content = section.querySelector(".section-content");
+    const icon = section.querySelector(".toggle-icon");
+
+    if (header && content && icon) {
+      header.addEventListener("click", () => {
+        section.classList.toggle("collapsed");
+
+        if (section.classList.contains("collapsed")) {
+          content.style.display = "none";
+          icon.textContent = "+";
+        } else {
+          content.style.display = "block";
+          icon.textContent = "−";
+        }
+      });
+    }
+  });
+}
 // export functions to global scope if module system is not used
 window.addEducationCard = addEducationCard;
 window.addExperienceCard = addExperienceCard;
