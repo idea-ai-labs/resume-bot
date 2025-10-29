@@ -393,7 +393,7 @@ function splitResumeSections(text) {
     }
   }
 
-  console.log("DEBUG: split sections =", sections);
+  logDebug("DEBUG: split sections =" + sections);
   return sections;
 }
 
@@ -477,7 +477,7 @@ function parseResumeText(text) {
     return;
   }
 
-  console.log("DEBUG: text length =", text.length);
+  logDebug("DEBUG: text length =" + text.length);
 
   const sections = splitResumeSections(text);
 
@@ -487,10 +487,10 @@ function parseResumeText(text) {
   const projects = extractProjects(sections.projects || []);
   const skills = extractSkills(sections.skills || []);
 
-  console.log("DEBUG education:", education);
-  console.log("DEBUG experience:", experience);
-  console.log("DEBUG projects:", projects);
-  console.log("DEBUG skills:", skills);
+  logDebug("DEBUG education:" + education);
+  logDebug("DEBUG experience:" + experience);
+  logDebug("DEBUG projects:" + projects);
+  logDebug("DEBUG skills:" + skills);
 
   const parsed = {
     name: basic.name,
