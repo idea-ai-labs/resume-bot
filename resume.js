@@ -447,6 +447,7 @@ function splitIntoSectionsWithDebug(text) {
   };
 
   log(`📄 Total lines: ${lines.length}`);
+  logDebug("Inside new method ....");
 
   for (const line of lines) {
     const lower = line.toLowerCase().trim();
