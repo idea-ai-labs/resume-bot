@@ -334,36 +334,70 @@ async function parseDOCX(file) {
   parseResumeText(result.value);
 }
 
-// ------------------ Robust Parsing ------------------
+// ------------------ Robust Parsing -----------------
+
 function splitResumeSections(text) {
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const sections = { header: [], education: [], experience: [], projects: [], skills: [] };
+  const lines = text
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  const sections = {
+    header: [],
+    education: [],
+    experience: [],
+    projects: [],
+    skills: []
+  };
+
   let current = "header";
 
   const sectionMarkers = {
-    education: ["education", "academics", "qualifications", "degrees"],
-    experience: ["experience", "work history", "employment", "professional experience", "career"],
-    projects    : ["projects", "portfolio", "case studies", "selected projects"],
-    skills: ["skills", "technical skills", "technologies", "proficiencies"]
+    education: ["education", "academic background", "studies", "qualifications"],
+    experience: [
+      "experience",
+      "employment",
+      "work history",
+      "professional experience",
+      "career"
+    ],
+    projects: ["projects", "portfolio", "case studies", "accomplishments"],
+    skills: [
+      "skills",
+      "technical skills",
+      "technologies",
+      "competencies",
+      "abilities"
+    ]
   };
 
   for (const line of lines) {
-    const lower = line.toLowerCase();
+    const normalized = line
+      .toLowerCase()
+      .replace(/[^a-z\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
     let found = false;
 
     for (const [key, markers] of Object.entries(sectionMarkers)) {
-      if (markers.some(marker => lower.includes(marker))) {
+      if (markers.some(marker => normalized.includes(marker))) {
         current = key;
         found = true;
         break;
       }
     }
 
-    if (!found) sections[current].push(line);
+    if (!found) {
+      sections[current].push(line);
+    }
   }
 
+  console.log("DEBUG: split sections =", sections);
   return sections;
 }
+
+
 
 function extractBasicInfo(headerLines) {
   const joined = headerLines.join(" ");
@@ -438,30 +472,52 @@ function extractSkills(lines) {
 
 function parseResumeText(text) {
   logDebug("🧠 Parsing resume text...");
+  if (!text || text.trim().length < 30) {
+    logDebug("⚠️ No valid text passed to parser");
+    return;
+  }
+
+  console.log("DEBUG: text length =", text.length);
 
   const sections = splitResumeSections(text);
+
   const basic = extractBasicInfo(sections.header || []);
   const education = extractEducation(sections.education || []);
   const experience = extractExperience(sections.experience || []);
   const projects = extractProjects(sections.projects || []);
   const skills = extractSkills(sections.skills || []);
 
-  const parsed = { name: basic.name, contact: basic.contact, education, experience, projects, skills };
+  console.log("DEBUG education:", education);
+  console.log("DEBUG experience:", experience);
+  console.log("DEBUG projects:", projects);
+  console.log("DEBUG skills:", skills);
 
-  // Populate UI
-  document.getElementById("name").value = parsed.name;
-  document.getElementById("email").value = parsed.contact.email;
-  document.getElementById("phone").value = parsed.contact.phone;
-  document.getElementById("website").value = parsed.contact.website;
+  const parsed = {
+    name: basic.name,
+    contact: basic.contact,
+    education,
+    experience,
+    projects,
+    skills
+  };
+
+  // Only update fields if values exist (avoid wiping UI)
+  if (parsed.name) document.getElementById("name").value = parsed.name;
+  if (parsed.contact?.email)
+    document.getElementById("email").value = parsed.contact.email;
+  if (parsed.contact?.phone)
+    document.getElementById("phone").value = parsed.contact.phone;
+  if (parsed.contact?.website)
+    document.getElementById("website").value = parsed.contact.website;
 
   ["education", "experience", "projects", "skills"].forEach(id => {
     document.getElementById(`${id}-cards`).innerHTML = "";
   });
 
-  education.forEach(addEducationCard);
-  experience.forEach(addExperienceCard);
-  projects.forEach(addProjectCard);
-  skills.forEach(addSkillCard);
+  if (education.length) education.forEach(addEducationCard);
+  if (experience.length) experience.forEach(addExperienceCard);
+  if (projects.length) projects.forEach(addProjectCard);
+  if (skills.length) skills.forEach(addSkillCard);
 
   saveToLocalStorage();
   logDebug("🎯 Resume parsed and populated successfully.");
