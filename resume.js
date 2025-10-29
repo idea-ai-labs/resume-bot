@@ -417,7 +417,197 @@ function normalizeResumeTextForSections(text) {
   return t.trim();
 }
 
+// ------------------ Resume Parsing Logic ------------------
+
+// Helper: split text into logical sections and log details
 function splitIntoSectionsWithDebug(text) {
+  const log = msg => logDebug(msg);
+
+  const lines = text
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
+
+  const sections = {};
+  let current = "header";
+  sections[current] = [];
+
+  const markers = [
+    "education",
+    "experience",
+    "projects",
+    "technical skills",
+    "skills",
+  ];
+
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+    const found = markers.find(m => lower.startsWith(m));
+    if (found) {
+      current = found.replace("technical skills", "skills");
+      sections[current] = [];
+      log(`🟢 Found section: ${current}`);
+    } else {
+      sections[current].push(line);
+    }
+  }
+
+  Object.entries(sections).forEach(([key, lines]) => {
+    if (lines.length)
+      log(`📘 ${key.toUpperCase()}:\n${lines.slice(0, 5).join("\n")}...`);
+  });
+
+  return sections;
+}
+
+// Helper: extract contact details from the header section
+function extractBasicInfo(headerLines) {
+  const joined = headerLines.join(" ");
+  const name = headerLines[0] || "Unknown";
+  const email = joined.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || "";
+  const phone = joined.match(/(\+?\d[\d .-]{8,}\d)/)?.[0] || "";
+  const website =
+    joined.match(/(https?:\/\/[^\s]+|linkedin\.com\/[^\s]+|github\.com\/[^\s]+)/i)?.[0] || "";
+
+  return { name, contact: { email, phone, website } };
+}
+
+// Helper: extract education entries
+function extractEducation(lines) {
+  const results = [];
+  let current = {};
+
+  for (const line of lines) {
+    if (line.match(/\b(Bachelor|Master|Associate|Ph\.?D|Degree|Diploma)\b/i)) {
+      current.degree = line;
+    } else if (line.match(/\b(Aug\.?|Sep\.?|Jan\.?|May)\b/i) && line.match(/\d{4}/)) {
+      current.dates = line;
+      results.push({ ...current });
+      current = {};
+    } else if (!current.school) {
+      current.school = line;
+    } else if (!current.location) {
+      current.location = line;
+    }
+  }
+
+  return results;
+}
+
+// Helper: extract experience entries
+function extractExperience(lines) {
+  const results = [];
+  let current = {};
+  const flush = () => {
+    if (Object.keys(current).length) {
+      results.push({ ...current });
+      current = {};
+    }
+  };
+
+  for (const line of lines) {
+    if (line.match(/\b(Present|[A-Z][a-z]+ \d{4})\b/)) {
+      current.dates = line;
+    } else if (line.startsWith("•")) {
+      current.details = current.details || [];
+      current.details.push(line.replace(/^•\s*/, ""));
+    } else if (!current.title) {
+      current.title = line;
+    } else if (!current.company) {
+      current.company = line;
+    } else if (!current.location) {
+      current.location = line;
+    } else {
+      flush();
+    }
+  }
+  flush();
+  return results;
+}
+
+// Helper: extract projects
+function extractProjects(lines) {
+  const results = [];
+  let current = {};
+
+  for (const line of lines) {
+    if (line.startsWith("•")) {
+      current.description = (current.description || "") + " " + line.replace(/^•\s*/, "");
+    } else if (line.match(/\|/)) {
+      if (Object.keys(current).length) results.push({ ...current });
+      const [title, ...rest] = line.split("|");
+      current = { title: title.trim(), description: rest.join("|").trim() };
+    }
+  }
+  if (Object.keys(current).length) results.push(current);
+  return results;
+}
+
+// Helper: extract skills
+function extractSkills(lines) {
+  const results = [];
+  for (const line of lines) {
+    const [category, rest] = line.split(":");
+    if (rest) {
+      const items = rest.split(",").map(s => s.trim()).filter(Boolean);
+      results.push({ category: category.trim(), items });
+    }
+  }
+  return results;
+}
+
+// ------------------ Main Parser ------------------
+async function parseResumeText(text) {
+  logDebug("🧠 Attempting to extract fields and sections...");
+  const sections = splitIntoSectionsWithDebug(text);
+
+  const basic = extractBasicInfo(sections.header || []);
+  const education = extractEducation(sections.education || []);
+  const experience = extractExperience(sections.experience || []);
+  const projects = extractProjects(sections.projects || []);
+  const skills = extractSkills(sections.skills || []);
+
+  const parsed = {
+    name: basic.name,
+    contact: basic.contact,
+    education,
+    experience,
+    projects,
+    skills,
+  };
+
+  // Log summary
+  logDebug(`✅ Parsed Resume Summary:
+- Name: ${parsed.name}
+- Email: ${parsed.contact.email}
+- Phone: ${parsed.contact.phone}
+- Website: ${parsed.contact.website}
+- Education entries: ${education.length}
+- Experience entries: ${experience.length}
+- Projects entries: ${projects.length}
+- Skill groups: ${skills.length}`);
+
+  // Populate the UI
+  document.getElementById("name").value = parsed.name;
+  document.getElementById("email").value = parsed.contact.email;
+  document.getElementById("phone").value = parsed.contact.phone;
+  document.getElementById("website").value = parsed.contact.website;
+
+  // Clear old cards
+  ["education", "experience", "projects", "skills"].forEach(id => {
+    document.getElementById(`${id}-cards`).innerHTML = "";
+  });
+
+  education.forEach(addEducationCard);
+  experience.forEach(addExperienceCard);
+  projects.forEach(addProjectCard);
+  skills.forEach(addSkillCard);
+
+  logDebug("🎯 Resume fields populated successfully.");
+}
+
+
+function splitIntoSectionsWithDebugOld(text) {
   const normalized = normalizeResumeTextForSections(text);
   // Show a short preview of normalized text
   logDebug("---- Resume Text Preview (first 1000 chars) ----");
@@ -481,7 +671,7 @@ function splitIntoSectionsWithDebug(text) {
 }
 
 // ------------------ Updated parseResumeText to use debug splitter ------------------
-function parseResumeText(text) {
+function parseResumeText1(text) {
   logDebug("🧠 Attempting to extract fields and sections...");
 
   // Basic info (same as before)
