@@ -296,6 +296,71 @@ async function generatePDF() {
   }
 }
 
+// ------------------ Resume Upload & Parse ------------------
+function handleResumeUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const ext = file.name.split(".").pop().toLowerCase();
+  logDebug(`📂 Uploading file: ${file.name}`);
+
+  if (ext === "pdf") {
+    parsePDF(file);
+  } else if (ext === "docx" || ext === "doc") {
+    parseDOCX(file);
+  } else {
+    alert("Unsupported file type. Please upload a PDF or DOCX file.");
+  }
+}
+
+// ---- PDF Parse using PDF.js ----
+async function parsePDF(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text = "";
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(item => item.str).join(" ") + "\n";
+  }
+
+  logDebug("✅ PDF text extracted. Parsing resume...");
+  parseResumeText(text);
+}
+
+// ---- DOCX Parse using Mammoth ----
+async function parseDOCX(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await window.mammoth.extractRawText({ arrayBuffer });
+  const text = result.value;
+  logDebug("✅ DOCX text extracted. Parsing resume...");
+  parseResumeText(text);
+}
+
+// ---- Parse text into structured resume fields ----
+function parseResumeText(text) {
+  logDebug("🧠 Attempting to extract fields...");
+
+  // simple patterns (we can refine later)
+  const nameMatch = text.match(/^[A-Z][a-z]+\s[A-Z][a-z]+/);
+  const emailMatch = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+  const phoneMatch = text.match(/(\+?\d[\d\s-]{8,}\d)/);
+  const websiteMatch = text.match(/https?:\/\/[^\s]+/);
+
+  // Fill basic info
+  if (nameMatch) document.getElementById("name").value = nameMatch[0];
+  if (emailMatch) document.getElementById("email").value = emailMatch[0];
+  if (phoneMatch) document.getElementById("phone").value = phoneMatch[0];
+  if (websiteMatch) document.getElementById("website").value = websiteMatch[0];
+
+  // Store parsed text (for more advanced parsing later)
+  localStorage.setItem("rawResumeText", text);
+
+  saveToLocalStorage();
+  logDebug("✅ Basic info filled. (Education/Experience parsing TBD)");
+}
+
 // ------------------ Initialize UI ------------------
 window.onload = () => {
   let resumeData = loadFromLocalStorage() || defaultResumeData;
@@ -325,6 +390,14 @@ window.onload = () => {
   });
 
   logDebug("🚀 Resume UI initialized");
+
+  const uploadInput = document.getElementById("upload-resume");
+  if (uploadInput) {
+    uploadInput.addEventListener("change", handleResumeUpload);
+  }
+
+  logDebug("✅ Resume Builder initialized and ready.");
+
 };
 
 // Export functions to global scope if needed
