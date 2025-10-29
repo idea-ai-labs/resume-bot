@@ -419,8 +419,60 @@ function normalizeResumeTextForSections(text) {
 
 // ------------------ Resume Parsing Logic ------------------
 
-// Helper: split text into logical sections and log details
 function splitIntoSectionsWithDebug(text) {
+  const log = msg => logDebug(msg, "section"); // use debug log
+
+  // Split text into lines, trim, remove empty
+  const lines = text
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
+
+  const sections = {};
+  let current = "header"; // start with header
+  sections[current] = [];
+
+  // Section markers (singular/plural normalized to final key)
+  const markersMap = {
+    education: "education",
+    educations: "education",
+    experience: "experience",
+    experiences: "experience",
+    project: "projects",
+    projects: "projects",
+    "technical skill": "skills",
+    "technical skills": "skills",
+    skill: "skills",
+    skills: "skills"
+  };
+
+  log(`📄 Total lines: ${lines.length}`);
+
+  for (const line of lines) {
+    const lower = line.toLowerCase().trim();
+    
+    // Normalize line to letters only for matching
+    const cleanLine = lower.replace(/[^a-z ]/g, "");
+
+    // Check if line contains a known marker
+    const foundKey = Object.keys(markersMap).find(key => cleanLine.includes(key));
+
+    if (foundKey) {
+      current = markersMap[foundKey];
+      if (!sections[current]) sections[current] = [];
+      log(`🟢 Found section: ${current}`);
+    } else if (current) {
+      sections[current].push(line);
+      log(`  ➡️ Added to ${current}: "${line}"`);
+    }
+  }
+
+  log("✅ Section splitting complete.");
+  return sections;
+}
+
+// Helper: split text into logical sections and log details
+function splitIntoSectionsWithDebug1(text) {
   const log = msg => logDebug(msg);
 
   const lines = text
@@ -441,14 +493,15 @@ function splitIntoSectionsWithDebug(text) {
   ];
 
   for (const line of lines) {
-    const lower = line.toLowerCase();
-    const found = markers.find(m => lower.startsWith(m));
+    const lower = line.toLowerCase().trim();
+    const found = markers.find(m => lower.replace(/[^a-z ]/g, "").includes(m));
+
     if (found) {
-      current = found.replace("technical skills", "skills");
-      sections[current] = [];
-      log(`🟢 Found section: ${current}`);
-    } else {
-      sections[current].push(line);
+       current = found.replace("technical skills", "skills");
+       sections[current] = [];
+       log(`🟢 Found section: ${current}`);
+    } else if (current) {
+       sections[current].push(line);
     }
   }
 
