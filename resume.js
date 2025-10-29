@@ -340,7 +340,7 @@ async function parseDOCX(file) {
 
 // ---- Parse text into structured resume fields ----
 
-function parseResumeText(text) {
+function parseResumeText1(text) {
   logDebug("🧠 Attempting to extract fields and sections...");
 
   // Normalize text
@@ -405,6 +405,109 @@ function splitIntoSections(text) {
   }
   return sectionMap;
 }
+
+// ------------------ Normalizer + Debug Splitter ------------------
+function normalizeResumeTextForSections(text) {
+  // Normalize line endings and remove weird spacing
+  let t = text.replace(/\r/g, "\n").replace(/\t/g, " ").replace(/[ \u00A0]+/g, " ");
+  // Insert newlines around common section headings to help segmentation
+  t = t.replace(/(\b(?:education|experience|employment|work history|projects|portfolio|skills|technical skills|certifications|education and qualifications)\b[:\s]?)/ig, "\n$1\n");
+  // Collapse multiple newlines to a single separator
+  t = t.replace(/\n{2,}/g, "\n");
+  return t.trim();
+}
+
+function splitIntoSectionsWithDebug(text) {
+  const normalized = normalizeResumeTextForSections(text);
+  // Show a short preview of normalized text
+  logDebug("---- Resume Text Preview (first 1000 chars) ----");
+  logDebug(normalized.slice(0, 1000));
+  console.log("Normalized resume text (preview):\n", normalized.slice(0, 1000));
+
+  const lines = normalized.split(/\n+/).map(l => l.trim()).filter(Boolean);
+
+  // Prepare containers
+  const sections = { education: [], experience: [], projects: [], skills: [], other: [] };
+
+  // markers for explicit header lines
+  const headerMap = {
+    education: /\b(education|academics|qualifications)\b/i,
+    experience: /\b(experience|employment|work history|professional experience|career)\b/i,
+    projects: /\b(projects|portfolio|selected projects|case studies)\b/i,
+    skills: /\b(skills|technical skills|technologies|proficiencies)\b/i
+  };
+
+  // Current target section
+  let current = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // If the line *looks like* a header, switch current
+    if (headerMap.education.test(line)) { current = "education"; continue; }
+    if (headerMap.experience.test(line)) { current = "experience"; continue; }
+    if (headerMap.projects.test(line)) { current = "projects"; continue; }
+    if (headerMap.skills.test(line)) { current = "skills"; continue; }
+
+    // If no current, use heuristics
+    if (!current) {
+      if (/\b(university|college|b\.sc|bachelor|master|ph\.d|degree)\b/i.test(line)) current = "education";
+      else if (/\b(engineer|developer|manager|consultant|intern|co-founder|director|company|inc\.|llc|corp|at)\b/i.test(line)) current = "experience";
+      else if (/\b(project|built|developed|designed|created|implemented)\b/i.test(line)) current = "projects";
+      else if (/\b(java(script)?|python|react|node|sql|html|css|d3|aws|azure|git)\b/i.test(line)) current = "skills";
+      else current = "other";
+    }
+
+    sections[current].push(line);
+  }
+
+  // Debug output: counts + samples
+  const report = {};
+  ["education","experience","projects","skills","other"].forEach(key => {
+    report[key] = {
+      count: sections[key].length,
+      sample: sections[key].slice(0, 8)
+    };
+  });
+
+  logDebug("---- Section split report ----");
+  Object.entries(report).forEach(([k,v]) => {
+    logDebug(`${k.toUpperCase()}: ${v.count} lines`);
+    v.sample.forEach((s, idx) => logDebug(`  ${idx+1}. ${s}`));
+  });
+  console.log("Section split report:", report);
+
+  return sections;
+}
+
+// ------------------ Updated parseResumeText to use debug splitter ------------------
+function parseResumeText(text) {
+  logDebug("🧠 Attempting to extract fields and sections...");
+
+  // Basic info (same as before)
+  const nameMatch = text.match(/^[A-Z][a-z]+(?:\s[A-Z][a-z]+)+/);
+  const emailMatch = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+  const phoneMatch = text.match(/(\+?\d[\d\s\-().]{8,}\d)/);
+  const websiteMatch = text.match(/https?:\/\/[^\s]+|www\.[^\s]+/);
+
+  if (nameMatch) document.getElementById("name").value = nameMatch[0];
+  if (emailMatch) document.getElementById("email").value = emailMatch[0];
+  if (phoneMatch) document.getElementById("phone").value = phoneMatch[0];
+  if (websiteMatch) document.getElementById("website").value = websiteMatch[0];
+
+  // Use debug splitter
+  const sections = splitIntoSectionsWithDebug(text);
+
+  // Now call your populate functions (they must use correct IDs)
+  populateEducation(sections.education);
+  populateExperience(sections.experience);
+  populateProjects(sections.projects);
+  populateSkills(sections.skills);
+
+  saveToLocalStorage();
+  logDebug("✅ parseResumeText finished.");
+}
+
 // ------------------ Populate Sections ------------------
 function populateEducation(lines = []) {
   if (!lines.length) return;
