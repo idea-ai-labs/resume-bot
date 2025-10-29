@@ -370,6 +370,41 @@ function parseResumeText(text) {
   logDebug("✅ Resume data populated from uploaded file.");
 }
 
+function splitIntoSections(text) {
+  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+  const sectionMap = { education: [], experience: [], projects: [], skills: [] };
+
+  logDebug("🎓 Split into sections...");
+
+  let current = null;
+  for (let line of lines) {
+    const low = line.toLowerCase();
+    if (/^(education|academics)/i.test(line)) {
+      current = "education";
+      continue;
+    }
+    if (/^(experience|work history)/i.test(line)) {
+      current = "experience";
+      continue;
+    }
+    if (/^(projects|portfolio)/i.test(line)) {
+      current = "projects";
+      continue;
+    }
+    if (/^(skills|technical skills)/i.test(line)) {
+      current = "skills";
+      continue;
+    }
+    if (!current) {
+      // fallback can assign to experience or education heuristically
+      if (/school|university/i.test(line)) current = "education";
+      else if (/engineer|developer|manager|intern/i.test(line)) current = "experience";
+      else current = "skills";
+    }
+    sectionMap[current].push(line);
+  }
+  return sectionMap;
+}
 // ------------------ Populate Sections ------------------
 function populateEducation(lines = []) {
   if (!lines.length) return;
