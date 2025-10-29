@@ -375,8 +375,8 @@ function populateEducation(lines = []) {
   if (!lines.length) return;
   logDebug("🎓 Parsing education section...");
 
-  // Remove old cards
   const eduContainer = document.getElementById("education-cards");
+  if (!eduContainer) return;
   eduContainer.innerHTML = "";
 
   const items = lines.filter(line =>
@@ -387,7 +387,7 @@ function populateEducation(lines = []) {
     addEducationCard({
       school: line,
       degree: line.match(/(B\.?Sc|M\.?Sc|Ph\.?D|Bachelor|Master|Degree)/i)?.[0] || "",
-      year: line.match(/\b(19|20)\d{2}\b/)?.[0] || "",
+      dates: line.match(/\b(19|20)\d{2}\b(.*\b(19|20)\d{2}\b)?/)?.[0] || ""
     });
   });
 }
@@ -397,6 +397,7 @@ function populateExperience(lines = []) {
   logDebug("💼 Parsing experience section...");
 
   const expContainer = document.getElementById("experience-cards");
+  if (!expContainer) return;
   expContainer.innerHTML = "";
 
   const items = lines.filter(line =>
@@ -405,10 +406,10 @@ function populateExperience(lines = []) {
 
   items.forEach(line => {
     addExperienceCard({
+      title: line.match(/(Engineer|Developer|Manager|Consultant|Lead|Intern)/i)?.[0] || "",
       company: line.match(/[A-Z][A-Za-z&.\s]+(Inc\.|LLC|Corp|Company)?/)?.[0] || "",
-      role: line.match(/(Engineer|Developer|Manager|Consultant|Lead|Intern)/i)?.[0] || "",
-      duration: line.match(/\b(19|20)\d{2}.*(19|20)\d{2}\b/)?.[0] || "",
-      description: line,
+      dates: line.match(/\b(19|20)\d{2}.*(19|20)\d{2}\b/)?.[0] || "",
+      details: [line]
     });
   });
 }
@@ -417,7 +418,8 @@ function populateProjects(lines = []) {
   if (!lines.length) return;
   logDebug("🧩 Parsing projects section...");
 
-  const projContainer = document.getElementById("project-cards");
+  const projContainer = document.getElementById("projects-cards");
+  if (!projContainer) return;
   projContainer.innerHTML = "";
 
   const items = lines.filter(line => /(project|developed|built|created|designed)/i.test(line));
@@ -425,7 +427,7 @@ function populateProjects(lines = []) {
   items.forEach(line => {
     addProjectCard({
       title: line.split(":")[0] || line.slice(0, 40),
-      description: line,
+      description: line
     });
   });
 }
@@ -434,14 +436,19 @@ function populateSkills(lines = []) {
   if (!lines.length) return;
   logDebug("🛠️ Parsing skills section...");
 
-  const skillContainer = document.getElementById("skill-cards");
+  const skillContainer = document.getElementById("skills-cards");
+  if (!skillContainer) return;
   skillContainer.innerHTML = "";
 
-  // Try to get comma-separated skills
   const skillText = lines.join(" ");
   const skills = skillText.split(/,|\s{2,}/).map(s => s.trim()).filter(Boolean);
 
-  skills.forEach(skill => addSkillCard({ name: skill }));
+  if (!skills.length) return;
+
+  addSkillCard({
+    category: "Auto Extracted",
+    items: skills.slice(0, 10)
+  });
 }
 
 // ------------------ Initialize UI ------------------
