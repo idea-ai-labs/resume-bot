@@ -589,6 +589,70 @@ function populateSkills(lines = []) {
   });
 }
 
+// ------------------ Render resume helper ------------------
+function clearAllCards() {
+  const ids = ["education-cards", "experience-cards", "projects-cards", "skills-cards"];
+  ids.forEach(id => {
+    const c = document.getElementById(id);
+    if (c) c.innerHTML = "";
+  });
+}
+
+/**
+ * Render the provided resume data into the UI.
+ * This clears existing cards, fills basic info, adds cards,
+ * then adjusts section heights and collapsibles.
+ */
+function renderResume(data) {
+  if (!data) return;
+  // Clear existing cards
+  clearAllCards();
+
+  // Basic info
+  const nameEl = document.getElementById("name");
+  const emailEl = document.getElementById("email");
+  const phoneEl = document.getElementById("phone");
+  const websiteEl = document.getElementById("website");
+  if (nameEl) nameEl.value = data.name || "";
+  if (emailEl) emailEl.value = data.contact?.email || "";
+  if (phoneEl) phoneEl.value = data.contact?.phone || "";
+  if (websiteEl) websiteEl.value = data.contact?.website || "";
+
+  // Populate cards
+  (data.education || []).forEach(addEducationCard);
+  (data.experience || []).forEach(addExperienceCard);
+  (data.projects || []).forEach(addProjectCard);
+  (data.skills || []).forEach(addSkillCard);
+
+  // Re-initialize collapsibles and adjust heights
+  document.querySelectorAll(".section").forEach(section => setupCollapsible(section));
+  // adjust heights for visible sections
+  document.querySelectorAll(".section").forEach(section => adjustSectionHeight(section));
+
+  logDebug("Rendered resume to UI.");
+}
+
+/**
+ * Reset stored resume and re-render defaults
+ */
+function resetToDefault() {
+  try {
+    localStorage.removeItem("resumeData");
+  } catch (e) {
+    console.warn("Failed to remove localStorage key resumeData", e);
+  }
+  renderResume(defaultResumeData);
+  // Optionally persist the default immediately so refresh shows default
+  try {
+    const data = collectResumeData();
+    localStorage.setItem("resumeData", JSON.stringify(data));
+    logDebug("✅ Reset to default and saved default to localStorage.");
+  } catch (e) {
+    logDebug("⚠️ Reseted to default but failed to save: " + e);
+  }
+}
+
+
 // ------------------ Initialize UI ------------------
 window.onload = () => {
   let resumeData = loadFromLocalStorage() || defaultResumeData;
@@ -624,6 +688,18 @@ window.onload = () => {
     uploadInput.addEventListener("change", handleResumeUpload);
   }
 
+  // Attach Reset button
+const resetBtn = document.getElementById("reset-btn");
+if (resetBtn) {
+  resetBtn.addEventListener("click", (e) => {
+    if (!confirm("Reset resume to default and clear saved changes?")) return;
+    resetToDefault();
+  });
+} else {
+  // optional: log missing element
+  logDebug("Reset button not found in DOM (id: reset-btn).");
+}
+  
   logDebug("✅ Resume Builder initialized and ready.");
 
 };
