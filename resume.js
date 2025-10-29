@@ -339,26 +339,109 @@ async function parseDOCX(file) {
 }
 
 // ---- Parse text into structured resume fields ----
+
 function parseResumeText(text) {
-  logDebug("🧠 Attempting to extract fields...");
+  logDebug("🧠 Attempting to extract fields and sections...");
 
-  // simple patterns (we can refine later)
-  const nameMatch = text.match(/^[A-Z][a-z]+\s[A-Z][a-z]+/);
+  // Normalize text
+  text = text.replace(/\r/g, "").trim();
+
+  // --- Basic info ---
+  const nameMatch = text.match(/^[A-Z][a-z]+(?:\s[A-Z][a-z]+)+/);
   const emailMatch = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
-  const phoneMatch = text.match(/(\+?\d[\d\s-]{8,}\d)/);
-  const websiteMatch = text.match(/https?:\/\/[^\s]+/);
+  const phoneMatch = text.match(/(\+?\d[\d\s\-().]{8,}\d)/);
+  const websiteMatch = text.match(/https?:\/\/[^\s]+|www\.[^\s]+/);
 
-  // Fill basic info
   if (nameMatch) document.getElementById("name").value = nameMatch[0];
   if (emailMatch) document.getElementById("email").value = emailMatch[0];
   if (phoneMatch) document.getElementById("phone").value = phoneMatch[0];
   if (websiteMatch) document.getElementById("website").value = websiteMatch[0];
 
-  // Store parsed text (for more advanced parsing later)
-  localStorage.setItem("rawResumeText", text);
+  // --- Section segmentation ---
+  const sections = splitIntoSections(text);
+
+  // --- Populate sections ---
+  populateEducation(sections.education);
+  populateExperience(sections.experience);
+  populateProjects(sections.projects);
+  populateSkills(sections.skills);
 
   saveToLocalStorage();
-  logDebug("✅ Basic info filled. (Education/Experience parsing TBD)");
+  logDebug("✅ Resume data populated from uploaded file.");
+}
+
+// ------------------ Populate Sections ------------------
+function populateEducation(lines = []) {
+  if (!lines.length) return;
+  logDebug("🎓 Parsing education section...");
+
+  // Remove old cards
+  const eduContainer = document.getElementById("education-cards");
+  eduContainer.innerHTML = "";
+
+  const items = lines.filter(line =>
+    /(B\.?Sc|M\.?Sc|B\.?A|M\.?A|Ph\.?D|University|College|Degree)/i.test(line)
+  );
+
+  items.forEach(line => {
+    addEducationCard({
+      school: line,
+      degree: line.match(/(B\.?Sc|M\.?Sc|Ph\.?D|Bachelor|Master|Degree)/i)?.[0] || "",
+      year: line.match(/\b(19|20)\d{2}\b/)?.[0] || "",
+    });
+  });
+}
+
+function populateExperience(lines = []) {
+  if (!lines.length) return;
+  logDebug("💼 Parsing experience section...");
+
+  const expContainer = document.getElementById("experience-cards");
+  expContainer.innerHTML = "";
+
+  const items = lines.filter(line =>
+    /(Engineer|Developer|Manager|Director|Intern|Consultant|Company|Inc\.|LLC|Corp)/i.test(line)
+  );
+
+  items.forEach(line => {
+    addExperienceCard({
+      company: line.match(/[A-Z][A-Za-z&.\s]+(Inc\.|LLC|Corp|Company)?/)?.[0] || "",
+      role: line.match(/(Engineer|Developer|Manager|Consultant|Lead|Intern)/i)?.[0] || "",
+      duration: line.match(/\b(19|20)\d{2}.*(19|20)\d{2}\b/)?.[0] || "",
+      description: line,
+    });
+  });
+}
+
+function populateProjects(lines = []) {
+  if (!lines.length) return;
+  logDebug("🧩 Parsing projects section...");
+
+  const projContainer = document.getElementById("project-cards");
+  projContainer.innerHTML = "";
+
+  const items = lines.filter(line => /(project|developed|built|created|designed)/i.test(line));
+
+  items.forEach(line => {
+    addProjectCard({
+      title: line.split(":")[0] || line.slice(0, 40),
+      description: line,
+    });
+  });
+}
+
+function populateSkills(lines = []) {
+  if (!lines.length) return;
+  logDebug("🛠️ Parsing skills section...");
+
+  const skillContainer = document.getElementById("skill-cards");
+  skillContainer.innerHTML = "";
+
+  // Try to get comma-separated skills
+  const skillText = lines.join(" ");
+  const skills = skillText.split(/,|\s{2,}/).map(s => s.trim()).filter(Boolean);
+
+  skills.forEach(skill => addSkillCard({ name: skill }));
 }
 
 // ------------------ Initialize UI ------------------
