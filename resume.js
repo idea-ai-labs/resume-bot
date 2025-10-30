@@ -338,8 +338,11 @@ async function parseDOCX(file) {
 
 
 function splitResumeSections(text) {
-  const lines = text.split(/\r?\n/);
+  //const lines = text.split(/\r?\n/);
+  // 👇 Pre-normalize to collapse spaced-out all-caps words like "W ORK EXPERI ENC E"
+  text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
 
+  const lines = text.split(/\r?\n/);
   const sections = {
     header: [],
     education: [],
