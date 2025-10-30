@@ -419,6 +419,78 @@ function splitResumeSections(text) {
   return sections;
 }
 
+function parseResumeText(text) {
+  try {
+    logDebug("🧠 Parsing resume text...");
+
+    // --- Clean up PDF text and force newlines around section headers ---
+    let cleaned = text
+      .replace(/\s{2,}/g, " ") // collapse excessive spaces
+      .replace(
+        /\s+(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\b/gi,
+        "\n$1"
+      )
+      .replace(
+        /\b(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\s+/gi,
+        "$1\n"
+      )
+      .replace(/\n{2,}/g, "\n"); // collapse multiple newlines
+
+    logDebug("DEBUG: text length = " + cleaned.length);
+
+    // --- Split text into sections ---
+    const sections = splitResumeSections(cleaned);
+
+    // --- Extract structured data from sections ---
+    const basic = extractBasicInfo(sections.header || []);
+    const education = extractEducation(sections.education || []);
+    const experience = extractExperience(sections.experience || []);
+    const projects = extractProjects(sections.projects || []);
+    const skills = extractSkills(sections.skills || []);
+
+    logDebug("DEBUG basic info: " + JSON.stringify(basic, null, 2));
+    logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
+    logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
+    logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
+    logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
+
+    // --- Safety guard: don't wipe UI if nothing parsed ---
+    if (
+      !basic.name &&
+      !education.length &&
+      !experience.length &&
+      !projects.length &&
+      !skills.length
+    ) {
+      logDebug("⚠️ No resume sections found — skipping UI update");
+      return;
+    }
+
+    // --- Populate UI ---
+    if (basic.name) document.getElementById("name").value = basic.name;
+    if (basic.contact?.email) document.getElementById("email").value = basic.contact.email;
+    if (basic.contact?.phone) document.getElementById("phone").value = basic.contact.phone;
+    if (basic.contact?.website) document.getElementById("website").value = basic.contact.website;
+
+    // Clear previous cards
+    ["education", "experience", "projects", "skills"].forEach(id => {
+      document.getElementById(`${id}-cards`).innerHTML = "";
+    });
+
+    // Add new cards
+    if (education.length) education.forEach(addEducationCard);
+    if (experience.length) experience.forEach(addExperienceCard);
+    if (projects.length) projects.forEach(addProjectCard);
+    if (skills.length) skills.forEach(addSkillCard);
+
+    // Save updated resume
+    saveToLocalStorage();
+    logDebug("🎯 Resume parsed and populated successfully.");
+
+  } catch (err) {
+    logDebug("❌ Error parsing resume text: " + err.message);
+  }
+}
 
 function extractBasicInfo(headerLines) {
   const joined = headerLines.join(" ");
@@ -491,79 +563,6 @@ function extractSkills(lines) {
   return results;
 }
 
-async function parseResumeText(text) {
-  try {
-    logDebug("🧠 Parsing resume text...");
-
-    // --- Clean up text ---
-    let cleaned = text
-      .replace(/\s{2,}/g, " ") // collapse extra spaces
-      .replace(
-        /(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)/gi,
-        "\n$1\n"
-      )
-      .replace(/\n{2,}/g, "\n"); // collapse multiple newlines
-
-    logDebug("DEBUG: text length = " + cleaned.length);
-
-    // --- Split into sections ---
-    const sections = splitResumeSections(cleaned);
-
-    // --- Extract structured info ---
-    const headerLines = sections.header || [];
-    const educationLines = sections.education || [];
-    const experienceLines = sections.experience || [];
-    const projectLines = sections.projects || [];
-    const skillLines = sections.skills || [];
-
-    // --- Extract basic info safely ---
-    const basic = extractBasicInfo(headerLines);
-
-    const education = extractEducation(educationLines);
-    const experience = extractExperience(experienceLines);
-    const projects = extractProjects(projectLines);
-    const skills = extractSkills(skillLines);
-
-    logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
-    logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
-    logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
-    logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
-
-    // --- Safety guard ---
-    if (
-      !education.length &&
-      !experience.length &&
-      !projects.length &&
-      !skills.length
-    ) {
-      logDebug("⚠️ No resume sections found — skipping UI update");
-      return;
-    }
-
-    // --- Populate UI ---
-    if (basic.name) document.getElementById("name").value = basic.name;
-    if (basic.contact?.email) document.getElementById("email").value = basic.contact.email;
-    if (basic.contact?.phone) document.getElementById("phone").value = basic.contact.phone;
-    if (basic.contact?.website) document.getElementById("website").value = basic.contact.website;
-
-    // Clear old cards
-    ["education", "experience", "projects", "skills"].forEach(id => {
-      const container = document.getElementById(`${id}-cards`);
-      if (container) container.innerHTML = "";
-    });
-
-    // Add parsed cards
-    education.forEach(addEducationCard);
-    experience.forEach(addExperienceCard);
-    projects.forEach(addProjectCard);
-    skills.forEach(addSkillCard);
-
-    saveToLocalStorage();
-    logDebug("🎯 Resume parsed and populated successfully.");
-  } catch (err) {
-    logDebug("❌ Error parsing resume text: " + err.message);
-  }
-}
 // ------------------ UI Render / Reset ------------------
 function renderResume(data) {
   if (!data) return;
