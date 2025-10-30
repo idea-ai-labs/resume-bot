@@ -88,6 +88,22 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <!-- DOCX Parser -->
 <script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
-Loaded <%= Date.now() %>">
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const footer = document.createElement("div");
+    footer.style.position = "fixed";
+    footer.style.bottom = "6px";
+    footer.style.right = "10px";
+    footer.style.fontSize = "12px";
+    footer.style.fontFamily = "monospace";
+    footer.style.color = "#777";
+    footer.style.opacity = "0.8";
+    footer.style.zIndex = "9999";
+    footer.textContent = `Loaded: ${new Date().toLocaleString()}`;
+    document.body.appendChild(footer);
+    console.log("✅ Page loaded at:", new Date().toLocaleString());
+  });
+</script>
 </body>
 </html>
