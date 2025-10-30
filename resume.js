@@ -434,18 +434,16 @@ async function parseResumeText(text) {
   try {
     logDebug("🧠 Parsing resume text...");
 
-    // --- Fix missing newlines in flat PDFs ---
-    let cleaned = text
-      .replace(/\s{2,}/g, " ") // collapse excessive spaces
-      .replace(
-        /\s+(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\b/gi,
-        "\n$1"
-      )
-      .replace(
-        /\b(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\s+/gi,
-        "$1\n"
-      );
 
+    // --- Fix missing newlines in flat PDFs ---
+   let cleaned = text
+       .replace(/\s{2,}/g, " ") // collapse extra spaces
+       // Force newlines around section markers (even if glued to previous text)
+       .replace(
+       /(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)/gi,
+        "\n$1\n"
+       )
+       .replace(/\n{2,}/g, "\n"); // collapse multiple newlines
     logDebug("DEBUG: text length = " + cleaned.length);
 
     const sections = splitResumeSections(cleaned);
