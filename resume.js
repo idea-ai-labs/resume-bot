@@ -414,8 +414,11 @@ function splitResumeSections(text) {
     );
 
     // --- Detect section markers ---
+  
     let matchedSection = Object.keys(sectionMarkers).find(key =>
-      sectionMarkers[key].some(marker => normalized.includes(marker))
+        sectionMarkers[key].some(marker =>
+            normalized.replace(/\s+/g, "").includes(marker.replace(/\s+/g, ""))
+        )
     );
 
     if (matchedSection) {
