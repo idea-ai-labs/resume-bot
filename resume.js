@@ -336,11 +336,9 @@ async function parseDOCX(file) {
 
 // ------------------ Robust Parsing -----------------
 
+
 function splitResumeSections(text) {
-  const lines = text
-    .split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(Boolean);
+  const lines = text.split(/\r?\n/);
 
   const sections = {
     header: [],
@@ -350,83 +348,136 @@ function splitResumeSections(text) {
     skills: []
   };
 
-  let current = "header";
+  let currentSection = "header";
 
+  // ✅ Full set of section markers
   const sectionMarkers = {
-  education: [
-    "education",
-    "academic background",
-    "studies",
-    "qualifications",
-    "certifications",
-    "certification",
-    "training",
-    "academics"
-  ],
-  experience: [
-    "experience",
-    "employment",
-    "work history",
-    "professional experience",
-    "career",
-    "work experience",
-    "positions",
-    "roles",
-    "employment history"
-  ],
-  projects: [
-    "projects",
-    "portfolio",
-    "case studies",
-    "accomplishments",
-    "notable work",
-    "personal projects",
-    "research",
-    "initiatives"
-  ],
-  skills: [
-    "skills",
-    "technical skills",
-    "technologies",
-    "competencies",
-    "abilities",
-    "tools",
-    "languages",
-    "proficiencies",
-    "expertise"
-  ]
-};
+    education: [
+      "education",
+      "academic background",
+      "studies",
+      "qualifications",
+      "certifications",
+      "certification",
+      "training",
+      "academics"
+    ],
+    experience: [
+      "experience",
+      "employment",
+      "work history",
+      "professional experience",
+      "career",
+      "work experience",
+      "positions",
+      "roles",
+      "employment history"
+    ],
+    projects: [
+      "projects",
+      "portfolio",
+      "case studies",
+      "accomplishments",
+      "notable work",
+      "personal projects",
+      "research",
+      "initiatives"
+    ],
+    skills: [
+      "skills",
+      "technical skills",
+      "technologies",
+      "competencies",
+      "abilities",
+      "tools",
+      "languages",
+      "proficiencies",
+      "expertise"
+    ]
+  };
 
+  for (let rawLine of lines) {
+    let line = rawLine.trim();
+    if (!line) continue;
 
-  for (const line of lines) {
-
-    const normalized = line
+    // --- Normalize line ---
+    let normalized = line
       .toLowerCase()
-      .replace(/[^a-z&\s]/g, " ")
-      .replace(/\s+/g, " ")
+      .replace(/[^a-z&\s]/g, " ")   // keep letters and &
+      .replace(/\s+/g, " ")         // collapse multiple spaces
       .trim();
 
-    let found = false;
+    // --- Collapse broken OCR headings like "EDU CATION" → "education" ---
+    normalized = normalized.replace(
+      /\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g,
+      m => m.replace(/\s+/g, "")
+    );
 
-    for (const [key, markers] of Object.entries(sectionMarkers)) {
-      if (markers.some(marker => normalized.includes(marker))) {
-        current = key;
-        found = true;
-        break;
-      }
+    // --- Detect section markers ---
+    let matchedSection = Object.keys(sectionMarkers).find(key =>
+      sectionMarkers[key].some(marker => normalized.includes(marker))
+    );
+
+    if (matchedSection) {
+      currentSection = matchedSection;
+      continue;
     }
 
-    if (!found) {
-      sections[current].push(line);
-    }
+    sections[currentSection].push(line);
   }
 
   logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
-  logDebug("DEBUG first 20 lines:\n" + lines.slice(0, 20).join("\n"));
   return sections;
 }
 
+async function parseResumeText(text) {
+  try {
+    logDebug("🧠 Parsing resume text...");
 
+    // --- Fix missing newlines in flat PDFs ---
+    let cleaned = text
+      .replace(/\s{2,}/g, " ") // collapse excessive spaces
+      .replace(
+        /\s+(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\b/gi,
+        "\n$1"
+      )
+      .replace(
+        /\b(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\s+/gi,
+        "$1\n"
+      );
+
+    logDebug("DEBUG: text length = " + cleaned.length);
+
+    const sections = splitResumeSections(cleaned);
+
+    const education = sections.education || [];
+    const experience = sections.experience || [];
+    const projects = sections.projects || [];
+    const skills = sections.skills || [];
+
+    logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
+    logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
+    logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
+    logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
+
+    // --- Safety guard: don't wipe UI if nothing parsed ---
+    if (
+      !education.length &&
+      !experience.length &&
+      !projects.length &&
+      !skills.length
+    ) {
+      logDebug("⚠️ No resume sections found — skipping UI update");
+      return;
+    }
+
+    // 🔧 Your existing UI population logic goes here
+    // updateUISections(education, experience, projects, skills);
+
+  } catch (err) {
+    logDebug("❌ Error parsing resume text: " + err.message);
+  }
+}
 
 function extractBasicInfo(headerLines) {
   const joined = headerLines.join(" ");
@@ -500,29 +551,47 @@ function extractSkills(lines) {
 }
 
 function parseResumeText(text) {
-  logDebug("🧠 Parsing resume text...");
-  if (!text || text.trim().length < 30) {
-    logDebug("⚠️ No valid text passed to parser");
-    return;
-  }
 
-  logDebug("DEBUG: text length =" + text.length);
+    logDebug("🧠 Parsing resume text...");
 
-  const sections = splitResumeSections(text);
+    // --- Fix missing newlines in flat PDFs ---
+    let cleaned = text
+      .replace(/\s{2,}/g, " ") // collapse excessive spaces
+      .replace(
+        /\s+(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\b/gi,
+        "\n$1"
+      )
+      .replace(
+        /\b(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\s+/gi,
+        "$1\n"
+      );
 
-  const basic = extractBasicInfo(sections.header || []);
-  const education = extractEducation(sections.education || []);
-  const experience = extractExperience(sections.experience || []);
-  const projects = extractProjects(sections.projects || []);
-  const skills = extractSkills(sections.skills || []);
+    logDebug("DEBUG: text length = " + cleaned.length);
 
+    const sections = splitResumeSections(cleaned);
 
-  logDebug("DEBUG: text length = " + text.length);
-logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
-logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
-logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
-logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
+    const education = sections.education || [];
+    const experience = sections.experience || [];
+    const projects = sections.projects || [];
+    const skills = sections.skills || [];
 
+    logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
+    logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
+    logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
+    logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
+
+    // --- Safety guard: don't wipe UI if nothing parsed ---
+    if (
+      !education.length &&
+      !experience.length &&
+      !projects.length &&
+      !skills.length
+    ) {
+      logDebug("⚠️ No resume sections found — skipping UI update");
+      return;
+    }
+
+  
   const parsed = {
     name: basic.name,
     contact: basic.contact,
