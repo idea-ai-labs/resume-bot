@@ -337,7 +337,7 @@ async function parseDOCX(file) {
 // ------------------ Robust Parsing -----------------
 
 
-function splitResumeSections(text) {
+function splitResumeSectionsOld(text) {
   //const lines = text.split(/\r?\n/);
   // 👇 Pre-normalize to collapse spaced-out all-caps words like "W ORK EXPERI ENC E"
   text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
@@ -430,6 +430,90 @@ function splitResumeSections(text) {
     }
 
     sections[currentSection].push(line);
+  }
+
+  logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
+  return sections;
+}
+
+function splitResumeSections(text) {
+  // Collapse spaced-out all-caps like "W ORK EXPERI ENC E"
+  text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
+
+  const lines = text.split(/\r?\n/);
+  const sections = {
+    header: [],
+    education: [],
+    experience: [],
+    projects: [],
+    skills: []
+  };
+
+  let currentSection = "header";
+
+  const sectionMarkers = {
+    education: [
+      "education", "academic background", "studies",
+      "qualifications", "certifications", "certification",
+      "training", "academics"
+    ],
+    experience: [
+      "experience", "employment", "work history",
+      "professional experience", "career",
+      "work experience", "positions", "roles",
+      "employment history"
+    ],
+    projects: [
+      "projects", "portfolio", "case studies",
+      "accomplishments", "notable work",
+      "personal projects", "research", "initiatives"
+    ],
+    skills: [
+      "skills", "technical skills", "technologies",
+      "competencies", "abilities", "tools",
+      "languages", "proficiencies", "expertise"
+    ]
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    let rawLine = lines[i];
+    let line = rawLine.trim();
+    if (!line) continue;
+
+    // --- Normalize line for detection ---
+    let normalized = line
+      .toLowerCase()
+      .replace(/[^a-z&\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // --- Collapse OCR-split headings like "W ORK EXPERIENCE" → "work experience" ---
+    normalized = normalized.replace(
+      /\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g,
+      m => m.replace(/\s+/g, "")
+    );
+
+    // --- Detect section markers (case-insensitive, spacing-tolerant) ---
+    const matchedSection = Object.keys(sectionMarkers).find(key =>
+      sectionMarkers[key].some(marker =>
+        normalized.replace(/\s+/g, "").includes(marker.toLowerCase().replace(/\s+/g, ""))
+      )
+    );
+
+    if (matchedSection) {
+      logDebug(`→ Switching to section: ${matchedSection} (line ${i})`);
+      currentSection = matchedSection;
+      continue;
+    }
+
+    // --- Assign line to current section ---
+    if (!currentSection) {
+      logDebug(`(line ${i}) No section yet; treating as header: "${line}"`);
+      sections.header.push(line);
+    } else {
+      logDebug(`(line ${i}) + [${currentSection}] "${line.slice(0, 60)}..."`);
+      sections[currentSection].push(line);
+    }
   }
 
   logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
