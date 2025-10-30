@@ -336,9 +336,8 @@ async function parseDOCX(file) {
 
 // ------------------ Robust Parsing -----------------
 
-
 function splitResumeSections(text) {
-  // 👇 Pre-normalize to collapse spaced-out all-caps words like "W ORK EXPERI ENC E"
+  // Collapse spaced-out all-caps words like "W ORK EXPERI ENC E"
   text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
 
   const lines = text.split(/\r?\n/);
@@ -351,45 +350,27 @@ function splitResumeSections(text) {
   };
 
   let currentSection = "header";
-  let bufferLine = ""; // for merging multi-line entries
+  let bufferEntry = null; // for merging multi-line entries
 
-  // Full set of section markers
   const sectionMarkers = {
-    education: [
-      "education", "academic background", "studies", "qualifications",
-      "certifications", "certification", "training", "academics"
-    ],
-    experience: [
-      "experience", "employment", "work history", "professional experience",
-      "career", "work experience", "positions", "roles", "employment history"
-    ],
-    projects: [
-      "projects", "portfolio", "case studies", "accomplishments",
-      "notable work", "personal projects", "research", "initiatives"
-    ],
-    skills: [
-      "skills", "technical skills", "technologies", "competencies",
-      "abilities", "tools", "languages", "proficiencies", "expertise"
-    ]
+    education: ["education","academic background","studies","qualifications","certifications","certification","training","academics"],
+    experience: ["experience","employment","work history","professional experience","career","work experience","positions","roles","employment history"],
+    projects: ["projects","portfolio","case studies","accomplishments","notable work","personal projects","research","initiatives"],
+    skills: ["skills","technical skills","technologies","competencies","abilities","tools","languages","proficiencies","expertise"]
+  };
+
+  const isSubheading = (line) => {
+    // Simple heuristic: line contains a date range (e.g., "Jun 2020 – Present") or is a single word followed by date
+    return /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*[-–]\s*(?:Present|\d{4})/i.test(line);
   };
 
   for (let i = 0; i < lines.length; i++) {
-    let rawLine = lines[i];
-    let line = rawLine.trim();
-    if (!line) continue;
+    let rawLine = lines[i].trim();
+    if (!rawLine) continue;
 
-    // Normalize line
-    let normalized = line
-      .toLowerCase()
-      .replace(/[^a-z&\s]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    // Collapse broken OCR headings
-    normalized = normalized.replace(
-      /\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g,
-      m => m.replace(/\s+/g, "")
-    );
+    // Normalize for section detection
+    let normalized = rawLine.toLowerCase().replace(/[^a-z&\s]/g, " ").replace(/\s+/g, " ").trim();
+    normalized = normalized.replace(/\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g, m => m.replace(/\s+/g, ""));
 
     // Detect section markers
     let matchedSection = Object.keys(sectionMarkers).find(key =>
@@ -397,45 +378,41 @@ function splitResumeSections(text) {
     );
 
     if (matchedSection) {
-      const isAllCaps = line.replace(/[^A-Z]/g, "").length >= 2;
-      const containsKeyword = sectionMarkers[matchedSection].some(marker =>
-        normalized.includes(marker)
-      );
-
-      if (isAllCaps || containsKeyword) {
-        if (bufferLine) {
-          sections[currentSection].push(bufferLine);
-          bufferLine = "";
-        }
-        logDebug(`(line ${i}) → Switching to section: ${matchedSection}`);
-        currentSection = matchedSection;
-        continue;
+      if (bufferEntry) {
+        sections[currentSection].push(bufferEntry);
+        bufferEntry = null;
       }
+      currentSection = matchedSection;
+      logDebug(`(line ${i}) → Switching to section: ${matchedSection}`);
+      continue;
     }
 
-    // --- Merge lines for experience/projects ---
+    // Handle experience/projects with subheadings
     if (currentSection === "experience" || currentSection === "projects") {
-      if (bufferLine) {
-        bufferLine += " " + line;
+      if (isSubheading(rawLine)) {
+        // Flush previous entry
+        if (bufferEntry) {
+          sections[currentSection].push(bufferEntry);
+        }
+        bufferEntry = rawLine; // start new entry
       } else {
-        bufferLine = line;
-      }
-
-      // If line ends with punctuation (likely end of entry), flush buffer
-      if (/[.!?]$/.test(line) || i === lines.length - 1) {
-        sections[currentSection].push(bufferLine);
-        bufferLine = "";
+        // Append to current entry
+        if (bufferEntry) {
+          bufferEntry += " " + rawLine;
+        } else {
+          bufferEntry = rawLine;
+        }
       }
     } else {
-      sections[currentSection].push(line);
+      sections[currentSection].push(rawLine);
     }
 
-    logDebug(`(line ${i}) + [${currentSection}] "${line}"`);
+    logDebug(`(line ${i}) + [${currentSection}] "${rawLine}"`);
   }
 
-  // Flush any remaining buffer
-  if (bufferLine) {
-    sections[currentSection].push(bufferLine);
+  // Flush last buffered entry
+  if (bufferEntry) {
+    sections[currentSection].push(bufferEntry);
   }
 
   logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
