@@ -337,8 +337,7 @@ async function parseDOCX(file) {
 // ------------------ Robust Parsing -----------------
 
 
-function splitResumeSectionsOld(text) {
-  //const lines = text.split(/\r?\n/);
+function splitResumeSections(text) {
   // 👇 Pre-normalize to collapse spaced-out all-caps words like "W ORK EXPERI ENC E"
   text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
 
@@ -352,120 +351,25 @@ function splitResumeSectionsOld(text) {
   };
 
   let currentSection = "header";
+  let bufferLine = ""; // for merging multi-line entries
 
-  // ✅ Full set of section markers
+  // Full set of section markers
   const sectionMarkers = {
     education: [
-      "education",
-      "academic background",
-      "studies",
-      "qualifications",
-      "certifications",
-      "certification",
-      "training",
-      "academics"
+      "education", "academic background", "studies", "qualifications",
+      "certifications", "certification", "training", "academics"
     ],
     experience: [
-      "experience",
-      "employment",
-      "work history",
-      "professional experience",
-      "career",
-      "work experience",
-      "positions",
-      "roles",
-      "employment history"
+      "experience", "employment", "work history", "professional experience",
+      "career", "work experience", "positions", "roles", "employment history"
     ],
     projects: [
-      "projects",
-      "portfolio",
-      "case studies",
-      "accomplishments",
-      "notable work",
-      "personal projects",
-      "research",
-      "initiatives"
+      "projects", "portfolio", "case studies", "accomplishments",
+      "notable work", "personal projects", "research", "initiatives"
     ],
     skills: [
-      "skills",
-      "technical skills",
-      "technologies",
-      "competencies",
-      "abilities",
-      "tools",
-      "languages",
-      "proficiencies",
-      "expertise"
-    ]
-  };
-
-  for (let rawLine of lines) {
-    let line = rawLine.trim();
-    if (!line) continue;
-
-    // --- Normalize line ---
-    let normalized = line
-      .toLowerCase()
-      .replace(/[^a-z&\s]/g, " ")   // keep letters and &
-      .replace(/\s+/g, " ")         // collapse multiple spaces
-      .trim();
-
-    // --- Collapse broken OCR headings like "EDU CATION" → "education" ---
-    normalized = normalized.replace(
-      /\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g,
-      m => m.replace(/\s+/g, "")
-    );
-
-    // --- Detect section markers ---
-  
-    let matchedSection = Object.keys(sectionMarkers).find(key =>
-        sectionMarkers[key].some(marker =>
-            normalized.replace(/\s+/g, "").includes(marker.replace(/\s+/g, ""))
-        )
-    );
-
-    if (matchedSection) {
-      currentSection = matchedSection;
-      continue;
-    }
-
-    sections[currentSection].push(line);
-  }
-
-  logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
-  return sections;
-}
-
-function splitResumeSections(text) {
-  text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
-
-  const lines = text.split(/\r?\n/);
-  const sections = {
-    header: [],
-    education: [],
-    experience: [],
-    projects: [],
-    skills: []
-  };
-
-  let currentSection = "header";
-
-  const sectionMarkers = {
-    education: [
-      "education","academic background","studies","qualifications",
-      "certifications","certification","training","academics"
-    ],
-    experience: [
-      "experience","employment","work history","professional experience",
-      "career","work experience","positions","roles","employment history"
-    ],
-    projects: [
-      "projects","portfolio","case studies","accomplishments",
-      "notable work","personal projects","research","initiatives"
-    ],
-    skills: [
-      "skills","technical skills","technologies","competencies",
-      "abilities","tools","languages","proficiencies","expertise"
+      "skills", "technical skills", "technologies", "competencies",
+      "abilities", "tools", "languages", "proficiencies", "expertise"
     ]
   };
 
@@ -474,37 +378,64 @@ function splitResumeSections(text) {
     let line = rawLine.trim();
     if (!line) continue;
 
+    // Normalize line
     let normalized = line
       .toLowerCase()
       .replace(/[^a-z&\s]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
 
+    // Collapse broken OCR headings
     normalized = normalized.replace(
       /\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g,
       m => m.replace(/\s+/g, "")
     );
 
-    logDebug(`(line ${i}) + [${currentSection}] "${line}"`);
-
-    // --- Section detection: only if line is likely a header ---
+    // Detect section markers
     let matchedSection = Object.keys(sectionMarkers).find(key =>
       sectionMarkers[key].some(marker => normalized === marker)
     );
 
-    // --- Additional heuristic: only switch if line is short or ALL CAPS ---
     if (matchedSection) {
-      const isAllCaps = line.replace(/[^A-Z]/g, "").length > 0 
-                        && line.replace(/[^A-Z]/g, "").length === line.replace(/[^A-Z\s]/g, "").length;
-      const isShort = line.length < 40;  // most headings are short
-      if (isAllCaps || isShort) {
-        logDebug(`→ Switching to section: ${matchedSection} (line ${i})`);
+      const isAllCaps = line.replace(/[^A-Z]/g, "").length >= 2;
+      const containsKeyword = sectionMarkers[matchedSection].some(marker =>
+        normalized.includes(marker)
+      );
+
+      if (isAllCaps || containsKeyword) {
+        if (bufferLine) {
+          sections[currentSection].push(bufferLine);
+          bufferLine = "";
+        }
+        logDebug(`(line ${i}) → Switching to section: ${matchedSection}`);
         currentSection = matchedSection;
         continue;
       }
     }
 
-    sections[currentSection].push(line);
+    // --- Merge lines for experience/projects ---
+    if (currentSection === "experience" || currentSection === "projects") {
+      if (bufferLine) {
+        bufferLine += " " + line;
+      } else {
+        bufferLine = line;
+      }
+
+      // If line ends with punctuation (likely end of entry), flush buffer
+      if (/[.!?]$/.test(line) || i === lines.length - 1) {
+        sections[currentSection].push(bufferLine);
+        bufferLine = "";
+      }
+    } else {
+      sections[currentSection].push(line);
+    }
+
+    logDebug(`(line ${i}) + [${currentSection}] "${line}"`);
+  }
+
+  // Flush any remaining buffer
+  if (bufferLine) {
+    sections[currentSection].push(bufferLine);
   }
 
   logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
