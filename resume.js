@@ -419,52 +419,6 @@ function splitResumeSections(text) {
   return sections;
 }
 
-async function parseResumeText(text) {
-  try {
-    logDebug("🧠 Parsing resume text...");
-
-
-    // --- Fix missing newlines in flat PDFs ---
-   let cleaned = text
-       .replace(/\s{2,}/g, " ") // collapse extra spaces
-       // Force newlines around section markers (even if glued to previous text)
-       .replace(
-       /(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)/gi,
-        "\n$1\n"
-       )
-       .replace(/\n{2,}/g, "\n"); // collapse multiple newlines
-    logDebug("DEBUG: text length = " + cleaned.length);
-
-    const sections = splitResumeSections(cleaned);
-
-    const education = sections.education || [];
-    const experience = sections.experience || [];
-    const projects = sections.projects || [];
-    const skills = sections.skills || [];
-
-    logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
-    logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
-    logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
-    logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
-
-    // --- Safety guard: don't wipe UI if nothing parsed ---
-    if (
-      !education.length &&
-      !experience.length &&
-      !projects.length &&
-      !skills.length
-    ) {
-      logDebug("⚠️ No resume sections found — skipping UI update");
-      return;
-    }
-
-    // 🔧 Your existing UI population logic goes here
-    // updateUISections(education, experience, projects, skills);
-
-  } catch (err) {
-    logDebug("❌ Error parsing resume text: " + err.message);
-  }
-}
 
 function extractBasicInfo(headerLines) {
   const joined = headerLines.join(" ");
@@ -537,84 +491,11 @@ function extractSkills(lines) {
   return results;
 }
 
-function parseResumeTextOld(text) {
-
-    logDebug("🧠 Parsing resume text...");
-
-    // --- Fix missing newlines in flat PDFs ---
-    let cleaned = text
-      .replace(/\s{2,}/g, " ") // collapse excessive spaces
-      .replace(
-        /\s+(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\b/gi,
-        "\n$1"
-      )
-      .replace(
-        /\b(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\s+/gi,
-        "$1\n"
-      );
-
-    logDebug("DEBUG: text length = " + cleaned.length);
-
-    const sections = splitResumeSections(cleaned);
-
-    const education = sections.education || [];
-    const experience = sections.experience || [];
-    const projects = sections.projects || [];
-    const skills = sections.skills || [];
-
-    logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
-    logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
-    logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
-    logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
-
-    // --- Safety guard: don't wipe UI if nothing parsed ---
-    if (
-      !education.length &&
-      !experience.length &&
-      !projects.length &&
-      !skills.length
-    ) {
-      logDebug("⚠️ No resume sections found — skipping UI update");
-      return;
-    }
-
-  
-  const parsed = {
-    name: basic.name,
-    contact: basic.contact,
-    education,
-    experience,
-    projects,
-    skills
-  };
-
-  // Only update fields if values exist (avoid wiping UI)
-  if (parsed.name) document.getElementById("name").value = parsed.name;
-  if (parsed.contact?.email)
-    document.getElementById("email").value = parsed.contact.email;
-  if (parsed.contact?.phone)
-    document.getElementById("phone").value = parsed.contact.phone;
-  if (parsed.contact?.website)
-    document.getElementById("website").value = parsed.contact.website;
-
-  ["education", "experience", "projects", "skills"].forEach(id => {
-    document.getElementById(`${id}-cards`).innerHTML = "";
-  });
-
-  if (education.length) education.forEach(addEducationCard);
-  if (experience.length) experience.forEach(addExperienceCard);
-  if (projects.length) projects.forEach(addProjectCard);
-  if (skills.length) skills.forEach(addSkillCard);
-
-  saveToLocalStorage();
-  logDebug("🎯 Resume parsed and populated successfully.");
-}
-
 async function parseResumeText(text) {
   try {
     logDebug("🧠 Parsing resume text...");
 
-    // --- Fix missing newlines in flat PDFs ---
+    // --- Clean and normalize text ---
     let cleaned = text
       .replace(/\s{2,}/g, " ") // collapse excessive spaces
       .replace(
@@ -628,77 +509,49 @@ async function parseResumeText(text) {
 
     logDebug("DEBUG: text length = " + cleaned.length);
 
+    // --- Split into sections ---
     const sections = splitResumeSections(cleaned);
 
-    const education = sections.education || [];
-    const experience = sections.experience || [];
-    const projects = sections.projects || [];
-    const skills = sections.skills || [];
+    // --- Extract structured data ---
+    const basic = extractBasicInfo(sections.header || []);
+    const education = (sections.education || []).map(line => extractEducation([line])).flat();
+    const experience = (sections.experience || []).map(line => extractExperience([line])).flat();
+    const projects = (sections.projects || []).map(line => extractProjects([line])).flat();
+    const skills = (sections.skills || []).map(line => extractSkills([line])).flat();
 
     logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
     logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
     logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
     logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
 
-    // --- Safety guard: don't wipe UI if nothing parsed ---
-    if (
-      !education.length &&
-      !experience.length &&
-      !projects.length &&
-      !skills.length
-    ) {
+    // --- Safety guard: skip UI update if nothing parsed ---
+    if (!education.length && !experience.length && !projects.length && !skills.length) {
       logDebug("⚠️ No resume sections found — skipping UI update");
       return;
     }
 
-    // --- Extract basic info from header section ---
-    const basic = extractBasicInfo(sections.header || []);
-
-    const parsed = {
-      name: basic.name,
-      contact: basic.contact,
-      education,
-      experience,
-      projects,
-      skills
-    };
-
     // --- Populate UI ---
-    mapParsedSectionsToForm(parsed);
+    if (basic.name) document.getElementById("name").value = basic.name;
+    if (basic.contact?.email) document.getElementById("email").value = basic.contact.email;
+    if (basic.contact?.phone) document.getElementById("phone").value = basic.contact.phone;
+    if (basic.contact?.website) document.getElementById("website").value = basic.contact.website;
 
+    ["education", "experience", "projects", "skills"].forEach(id => {
+      const container = document.getElementById(`${id}-cards`);
+      if(container) container.innerHTML = "";
+    });
+
+    education.forEach(addEducationCard);
+    experience.forEach(addExperienceCard);
+    projects.forEach(addProjectCard);
+    skills.forEach(addSkillCard);
+
+    saveToLocalStorage();
     logDebug("🎯 Resume parsed and populated successfully.");
+
   } catch (err) {
     logDebug("❌ Error parsing resume text: " + err.message);
   }
-}
-
-function mapParsedSectionsToForm(parsed) {
-  if (!parsed) return;
-  logDebug("🎯 Populating form fields from parsed resume...");
-
-  // --- Basic Info ---
-  if (parsed.name) document.getElementById("name").value = parsed.name;
-  if (parsed.contact?.email)
-    document.getElementById("email").value = parsed.contact.email;
-  if (parsed.contact?.phone)
-    document.getElementById("phone").value = parsed.contact.phone;
-  if (parsed.contact?.website)
-    document.getElementById("website").value = parsed.contact.website;
-
-  // --- Clear Existing ---
-  ["education-cards", "experience-cards", "projects-cards", "skills-cards"].forEach(id => {
-    const container = document.getElementById(id);
-    if (container) container.innerHTML = "";
-  });
-
-  // --- Populate Dynamically ---
-  (parsed.education || []).forEach(addEducationCard);
-  (parsed.experience || []).forEach(addExperienceCard);
-  (parsed.projects || []).forEach(addProjectCard);
-  (parsed.skills || []).forEach(addSkillCard);
-
-  saveToLocalStorage();
-  logDebug("✅ UI populated with parsed data.");
 }
 
 // ------------------ UI Render / Reset ------------------
