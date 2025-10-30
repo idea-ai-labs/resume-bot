@@ -353,28 +353,56 @@ function splitResumeSections(text) {
   let current = "header";
 
   const sectionMarkers = {
-    education: ["education", "academic background", "studies", "qualifications"],
-    experience: [
-      "experience",
-      "employment",
-      "work history",
-      "professional experience",
-      "career"
-    ],
-    projects: ["projects", "portfolio", "case studies", "accomplishments"],
-    skills: [
-      "skills",
-      "technical skills",
-      "technologies",
-      "competencies",
-      "abilities"
-    ]
-  };
+  education: [
+    "education",
+    "academic background",
+    "studies",
+    "qualifications",
+    "certifications",
+    "certification",
+    "training",
+    "academics"
+  ],
+  experience: [
+    "experience",
+    "employment",
+    "work history",
+    "professional experience",
+    "career",
+    "work experience",
+    "positions",
+    "roles",
+    "employment history"
+  ],
+  projects: [
+    "projects",
+    "portfolio",
+    "case studies",
+    "accomplishments",
+    "notable work",
+    "personal projects",
+    "research",
+    "initiatives"
+  ],
+  skills: [
+    "skills",
+    "technical skills",
+    "technologies",
+    "competencies",
+    "abilities",
+    "tools",
+    "languages",
+    "proficiencies",
+    "expertise"
+  ]
+};
+
 
   for (const line of lines) {
+
     const normalized = line
       .toLowerCase()
-      .replace(/[^a-z\s]/g, " ")
+      .replace(/[^a-z&\s]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
 
@@ -394,6 +422,7 @@ function splitResumeSections(text) {
   }
 
   logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
+  logDebug("DEBUG first 20 lines:\n" + lines.slice(0, 20).join("\n"));
   return sections;
 }
 
