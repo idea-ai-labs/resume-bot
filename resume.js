@@ -337,96 +337,9 @@ async function parseDOCX(file) {
 
 // ------------------ Robust Parsing -----------------
 
-function splitResumeSectionsOld(text) {
-  // Collapse spaced-out all-caps words like "W ORK EXPERI ENC E"
-  text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
-
-  const lines = text.split(/\r?\n/);
-  const sections = {
-    header: [],
-    education: [],
-    experience: [],
-    projects: [],
-    skills: []
-  };
-
-  let currentSection = "header";
-  let bufferEntry = null; // for merging multi-line entries
-
-  const sectionMarkers = {
-    education: ["education","academic background","studies","qualifications","certifications","certification","training","academics"],
-    experience: ["experience","employment","work history","professional experience","career","work experience","positions","roles","employment history"],
-    projects: ["projects","portfolio","case studies","accomplishments","notable work","personal projects","research","initiatives"],
-    skills: ["skills","technical skills","technologies","competencies","abilities","tools","languages","proficiencies","expertise"]
-  };
-
-  const isSubheading = (line) => {
-    // Simple heuristic: line contains a date range (e.g., "Jun 2020 – Present") or is a single word followed by date
-    return /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*[-–]\s*(?:Present|\d{4})/i.test(line);
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    let rawLine = lines[i].trim();
-    if (!rawLine) continue;
-
-    // Normalize for section detection
-    let normalized = rawLine.toLowerCase().replace(/[^a-z&\s]/g, " ").replace(/\s+/g, " ").trim();
-    normalized = normalized.replace(/\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g, m => m.replace(/\s+/g, ""));
-
-    // Detect section markers
-    let matchedSection = Object.keys(sectionMarkers).find(key =>
-      sectionMarkers[key].some(marker => normalized === marker)
-    );
-
-    if (matchedSection) {
-      if (bufferEntry) {
-        sections[currentSection].push(bufferEntry);
-        bufferEntry = null;
-      }
-      currentSection = matchedSection;
-      logDebug(`(line ${i}) → Switching to section: ${matchedSection}`);
-      continue;
-    }
-
-    // Handle experience/projects with subheadings
-    if (currentSection === "experience" || currentSection === "projects") {
-      if (isSubheading(rawLine)) {
-        // Flush previous entry
-        if (bufferEntry) {
-          sections[currentSection].push(bufferEntry);
-        }
-        bufferEntry = rawLine; // start new entry
-      } else {
-        // Append to current entry
-        if (bufferEntry) {
-          bufferEntry += " " + rawLine;
-        } else {
-          bufferEntry = rawLine;
-        }
-      }
-    } else {
-      sections[currentSection].push(rawLine);
-    }
-
-    logDebug(`(line ${i}) + [${currentSection}] "${rawLine}"`);
-  }
-
-  // Flush last buffered entry
-  if (bufferEntry) {
-    sections[currentSection].push(bufferEntry);
-  }
-
-  logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
-  return sections;
-}
-
-// ------------------ Robust Resume Parsing ------------------
-
 //-----------------------------------------------------
 // 🧩 Resume Parsing and Populating Script (Unified)
 //-----------------------------------------------------
-
-
 
 function splitResumeSections(text) {
   logDebug("🔍 Splitting resume sections (merged stable version)");
@@ -543,28 +456,32 @@ function extractEducation(lines) {
     /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
 
   // --- Helper to extract a single record ---
+p
   const parseOne = (chunk) => {
-    const entry = {};
-    const dateMatch = chunk.match(dateRegex);
-    if (dateMatch) entry.dates = dateMatch[0];
+  const entry = {};
 
-    // Split chunk into tokens by commas or double spaces for analysis
-    const parts = chunk.split(/(?<!\b[A-Z])[,\n]/).map(p => p.trim()).filter(Boolean);
+  // Extract all date ranges in this chunk
+  const dateMatches = chunk.match(new RegExp(dateRegex, "g")) || [];
+  if (dateMatches.length) {
+    entry.dates = dateMatches.join(" – "); // join multiple ranges if needed
+  }
 
-    // Find school name
-    const schoolMatch = chunk.match(/([A-Z][\w\s.&']+(University|College|Institute|School))/i);
-    if (schoolMatch) entry.school = schoolMatch[0].trim();
+  // School name
+  const schoolMatch = chunk.match(/([A-Z][\w\s.&']+(University|College|Institute|School))/i);
+  if (schoolMatch) entry.school = schoolMatch[0].trim();
 
-    // Degree or major
-    const degreeMatch = chunk.match(/\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i);
-    if (degreeMatch) entry.degree = degreeMatch[0].trim();
+  // Degree or major (try to take the part after the school name)
+  let afterSchool = chunk;
+  if (schoolMatch) afterSchool = chunk.slice(schoolMatch.index + schoolMatch[0].length);
+  const degreeMatch = afterSchool.match(/\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i);
+  if (degreeMatch) entry.degree = degreeMatch[0].trim();
 
-    // Location (city, state)
-    const locationMatch = chunk.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
-    if (locationMatch) entry.location = locationMatch[0].trim();
+  // Location (city, state)
+  const locationMatch = chunk.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
+  if (locationMatch) entry.location = locationMatch[0].trim();
 
-    return entry;
-  };
+  return entry;
+};
 
   for (let line of lines) {
     if (!line.trim()) continue;
@@ -680,7 +597,7 @@ function extractSkills(lines) {
 
 async function parseResumeText(text) {
   try {
-    logDebug("🧠 Parsing resume text v6....");
+    logDebug("🧠 Parsing resume text ver 7....");
 
     // --- Clean PDF text and force newlines around section markers ---
     let cleaned = text
