@@ -389,7 +389,7 @@ window.onload = () => {
     if(el) el.addEventListener("input", saveToLocalStorage);
   });
 
-  logDebug("✅ Resume Builder initialized.");
+  logDebug("✅ Resume Builder initialized. resumeParser ver 1");
 };
 
 // Expose functions
