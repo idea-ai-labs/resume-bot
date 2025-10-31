@@ -538,51 +538,47 @@ function extractBasicInfo(headerLines) {
 
 function extractEducation(lines) {
   const results = [];
-  let current = {};
-
   const dateRegex =
-    /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
+    /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
 
-  for (const line of lines) {
+  // --- Helper to extract a single record ---
+  const parseOne = (chunk) => {
+    const entry = {};
+    const dateMatch = chunk.match(dateRegex);
+    if (dateMatch) entry.dates = dateMatch[0];
+
+    // Split chunk into tokens by commas or double spaces for analysis
+    const parts = chunk.split(/(?<!\b[A-Z])[,\n]/).map(p => p.trim()).filter(Boolean);
+
+    // Find school name
+    const schoolMatch = chunk.match(/([A-Z][\w\s.&']+(University|College|Institute|School))/i);
+    if (schoolMatch) entry.school = schoolMatch[0].trim();
+
+    // Degree or major
+    const degreeMatch = chunk.match(/\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i);
+    if (degreeMatch) entry.degree = degreeMatch[0].trim();
+
+    // Location (city, state)
+    const locationMatch = chunk.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
+    if (locationMatch) entry.location = locationMatch[0].trim();
+
+    return entry;
+  };
+
+  for (let line of lines) {
     if (!line.trim()) continue;
 
-    // --- Handle multiple schools in one line (merged line case) ---
-    // Example: "Southwestern University Georgetown, TX Bachelor ... Blinn College Bryan, TX Associate’s ..."
-    const multiSchoolMatch = line.match(/([A-Z][\w\s.&']+University|College|Institute)[^A-Z]*(?=[A-Z][\w\s.&']+(University|College|Institute)|$)/g);
-    if (multiSchoolMatch && multiSchoolMatch.length > 1) {
-      // Split by school name occurrences
-      const parts = line.split(/(?=[A-Z][\w\s.&']+(University|College|Institute))/g).map(p => p.trim()).filter(Boolean);
-      parts.forEach(part => {
-        const sub = extractEducation([part]);
-        if (sub.length) results.push(sub[0]);
-      });
-      continue;
-    }
+    // --- Split one long line into multiple schools if needed ---
+    const parts = line.split(
+      /(?=\b[A-Z][\w\s.&']+(University|College|Institute|School)\b)/g
+    ).map(p => p.trim()).filter(Boolean);
 
-    // --- Normal parsing logic ---
-    if (line.match(/\b(Bachelor|Master|Associate|Ph\.?D|Degree|Diploma)\b/i)) {
-      current.degree = line.trim();
-    } 
-    else if (dateRegex.test(line)) {
-      current.dates = line.trim();
-      results.push({ ...current });
-      current = {};
-    } 
-    else if (!current.school) {
-      current.school = line.trim();
-    } 
-    else if (!current.location) {
-      current.location = line.trim();
-    } 
-    else if (current.degree) {
-      current.degree += "\n" + line.trim();
-    } 
-    else {
-      current.school += "\n" + line.trim();
-    }
+    parts.forEach(part => {
+      const entry = parseOne(part);
+      if (Object.keys(entry).length) results.push(entry);
+    });
   }
 
-  if (Object.keys(current).length) results.push(current);
   return results;
 }
 
@@ -683,7 +679,7 @@ function extractSkills(lines) {
 
 async function parseResumeText(text) {
   try {
-    logDebug("🧠 Parsing resume text v5.....");
+    logDebug("🧠 Parsing resume text v6....");
 
     // --- Clean PDF text and force newlines around section markers ---
     let cleaned = text
