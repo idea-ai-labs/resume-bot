@@ -509,16 +509,36 @@ function extractEducation(lines) {
   const results = [];
   let current = {};
 
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
+
   for (const line of lines) {
     if (!line.trim()) continue;
 
-    if (line.match(/\b(Bachelor|Master|Associate|Ph\.?D|Degree|Diploma)\b/i)) current.degree = line;
-    else if (line.match(/\b(Aug\.?|Sep\.?|Jan\.?|May)\b/i) && line.match(/\d{4}/)) {
-      current.dates = line;
+    // Check if line contains a degree
+    if (line.match(/\b(Bachelor|Master|Associate|Ph\.?D|Degree|Diploma)\b/i)) {
+      current.degree = line.trim();
+    } 
+    // Check if line contains dates
+    else if (dateRegex.test(line)) {
+      current.dates = line.trim();
       results.push({ ...current });
       current = {};
-    } else if (!current.school) current.school = line;
-    else if (!current.location) current.location = line;
+    } 
+    // If we already have a school, append remaining lines as location or minor
+    else if (!current.school) {
+      current.school = line.trim();
+    } 
+    else if (!current.location) {
+      current.location = line.trim();
+    } 
+    // If neither degree, dates, nor school/location, append to degree (like Minor or continuation)
+    else if (current.degree) {
+      current.degree += "\n" + line.trim();
+    } 
+    else {
+      // Fallback: store in school if degree missing
+      current.school += "\n" + line.trim();
+    }
   }
 
   if (Object.keys(current).length) results.push(current);
@@ -527,42 +547,87 @@ function extractEducation(lines) {
 
 function extractExperience(lines) {
   const results = [];
-  let current = { details: [] };
+  let current = null;
 
-  const flush = () => { if (Object.keys(current).length) { results.push({ ...current }); current = { details: [] }; } };
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
 
   for (const line of lines) {
     if (!line.trim()) continue;
 
-    if (line.startsWith("•")) current.details.push(line.replace(/^•\s*/, ""));
-    else if (line.match(/\b(Present|[A-Z][a-z]+ \d{4})\b/)) current.dates = line;
-    else if (!current.title) current.title = line;
-    else if (!current.company) current.company = line;
-    else if (!current.location) current.location = line;
-    else flush();
+    if (line.startsWith("•")) {
+      if (current) current.details.push(line.replace(/^•\s*/, ""));
+    } else {
+      // New experience entry
+      if (current) results.push(current);
+
+      // Try to extract title + dates from first line
+      let datesMatch = line.match(dateRegex);
+      let dates = datesMatch ? datesMatch[0] : "";
+      let titlePart = dates ? line.replace(dates, "").trim() : line.trim();
+
+      // Split titlePart by " / " or " – " for possible company/location
+      let parts = titlePart.split(/\/|–/).map(s => s.trim());
+      let title = parts[0] || "";
+      let company = parts[1] || "";
+      let location = parts[2] || "";
+
+      current = {
+        title,
+        company,
+        location,
+        dates,
+        details: []
+      };
+    }
   }
-  flush();
+
+  if (current) results.push(current);
   return results;
 }
 
 function extractProjects(lines) {
   const results = [];
-  let current = { title: "", description: "", details: [] };
+  let current = null;
+
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
 
   for (const line of lines) {
     if (!line.trim()) continue;
 
-    if (line.startsWith("•")) current.details.push(line.replace(/^•\s*/, ""));
-    else if (line.includes("|")) {
-      if (current.title || current.description) results.push({ ...current });
+    if (line.startsWith("•")) {
+      // Add bullet to current project details
+      if (current) current.details.push(line.replace(/^•\s*/, ""));
+    } else if (line.includes("|")) {
+      // New project entry with explicit title | description
+      if (current) results.push(current);
+
       const [title, ...rest] = line.split("|");
-      current = { title: title.trim(), description: rest.join("|").trim(), details: [] };
+      current = {
+        title: title.trim(),
+        description: rest.join("|").trim(),
+        details: []
+      };
     } else {
-      current.description += (current.description ? "\n" : "") + line;
+      // Possibly a title line with dates
+      let datesMatch = line.match(dateRegex);
+      let dates = datesMatch ? datesMatch[0] : "";
+      let titlePart = dates ? line.replace(dates, "").trim() : line.trim();
+
+      // Split by " / " or " – " to extract title & optional description
+      let parts = titlePart.split(/\/|–/).map(s => s.trim());
+      let title = parts[0] || "";
+      let description = parts.slice(1).join(" | ") || "";
+
+      if (current) results.push(current);
+      current = {
+        title,
+        description: description + (dates ? " " + dates : ""),
+        details: []
+      };
     }
   }
 
-  if (current.title || current.description) results.push(current);
+  if (current) results.push(current);
   return results;
 }
 
@@ -577,7 +642,7 @@ function extractSkills(lines) {
 
 async function parseResumeText(text) {
   try {
-    logDebug("🧠 Parsing resume text v2...");
+    logDebug("🧠 Parsing resume text v3...");
 
     // --- Clean PDF text and force newlines around section markers ---
     let cleaned = text
