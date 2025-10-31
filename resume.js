@@ -336,7 +336,7 @@ async function parseDOCX(file) {
 
 // ------------------ Robust Parsing -----------------
 
-function splitResumeSections(text) {
+function splitResumeSectionsOld(text) {
   // Collapse spaced-out all-caps words like "W ORK EXPERI ENC E"
   text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
 
@@ -426,18 +426,23 @@ function preprocessResumeText(text) {
   // Collapse extra spaces
   text = text.replace(/\s{2,}/g, " ");
 
-  // Insert newlines before known section headers even if they are mid-line
+  // Fix duplicated words like 'ResearchResearch'
+  text = text.replace(/([A-Za-z]+)\1/g, "$1 ");
+
+  // Insert newlines before and after section headers
   text = text.replace(
-    /\b(?=(Education|Experience|Projects|Technical Skills|Skills|Certifications|Awards|Activities|Research|Training))\b/gi,
-    "\n$1"
+    /\b(Education|Experience|Projects|Technical Skills|Skills|Certifications|Awards|Activities|Research|Training)\b/gi,
+    "\n$1\n"
   );
 
-  // Normalize newlines
+  // Insert newlines where lowercase → uppercase transitions (common in PDFs)
+  text = text.replace(/([a-z])([A-Z])/g, "$1\n$2");
+
+  // Normalize multiple newlines
   text = text.replace(/\n{2,}/g, "\n");
 
   return text.trim();
 }
-
 function splitResumeSections(text) {
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const sections = { header: [], education: [], experience: [], projects: [], skills: [] };
