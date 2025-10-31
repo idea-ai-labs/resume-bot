@@ -74,14 +74,14 @@ function splitResumeSections(text) {
       // Avoid switching on inline words like “Research Experience Assistant”
       if (rawLine.split(" ").length > 6) {
         // long line → likely not a pure section heading
-        logDebug(`(line ${i}) ⚠️ Ignored false section: "${rawLine}"`);
+       // logDebug(`(line ${i}) ⚠️ Ignored false section: "${rawLine}"`);
       } else {
         if (bufferEntry) {
           sections[currentSection].push(bufferEntry);
           bufferEntry = null;
         }
         currentSection = matchedSection;
-        logDebug(`(line ${i}) → Switching to section: ${matchedSection}`);
+        //logDebug(`(line ${i}) → Switching to section: ${matchedSection}`);
         continue;
       }
     }
@@ -104,7 +104,7 @@ function splitResumeSections(text) {
   // --- Flush last buffered entry ---
   if (bufferEntry) sections[currentSection].push(bufferEntry);
 
-  logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
+ // logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
   return sections;
 }
 
@@ -123,6 +123,8 @@ function extractBasicInfo(headerLines) {
 
 function extractEducation(lines) {
   const results = [];
+
+  let lines = sectionText.split(/\n|(?=(?:[A-Z][a-z]+ (?:University|College|Institute)))/);
   
   // Regex for dates like "Aug. 2018 – May 2021"
   const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/gi;
@@ -298,11 +300,11 @@ async function parseResumeText(text) {
     const projects = extractProjects(projectLines);
     const skills = extractSkills(skillsLines);
 
-   // logDebug("DEBUG basic: " + JSON.stringify(basic, null, 2));
-    //logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
-  //  logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
-    //logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
-   // logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
+    logDebug("DEBUG basic: " + JSON.stringify(basic, null, 2));
+    logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
+    logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
+    logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
+    logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
 
     // --- Safety guard: don't wipe UI if nothing parsed ---
     if (
