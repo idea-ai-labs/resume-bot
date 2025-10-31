@@ -444,7 +444,7 @@ function splitResumeSections(text) {
   const sectionMarkers = {
     education: ["education","academic background","studies","qualifications","certifications","certification","training","academics"],
     experience: ["experience","employment","work history","professional experience","career","work experience","positions","roles","employment history"],
-    projects: ["projects","portfolio","case studies","accomplishments","notable work","personal projects","research","initiatives"],
+    projects: ["projects","portfolio","case studies","accomplishments","notable work","personal projects","search","initiatives"],
     skills: ["skills","technical skills","technologies","competencies","abilities","tools","languages","proficiencies","expertise"]
   };
 
