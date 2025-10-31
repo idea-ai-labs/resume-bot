@@ -3,7 +3,7 @@
 //-----------------------------------------------------
 
 function splitResumeSections(text) {
-  logDebug(" 💐💐 resumeParser ver 3.1...");
+  logDebug(" 💐💐 resumeParser ver 3.2....");
 
   logDebug("🔍 Splitting resume sections (merged stable version)");
 
