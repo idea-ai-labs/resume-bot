@@ -419,46 +419,109 @@ function splitResumeSections(text) {
   return sections;
 }
 
-function parseResumeText(text) {
-  logDebug("🧠 guruji Parsing resume text...");
+// ------------------ Robust Resume Parsing ------------------
 
-  // --- Fix missing newlines in flat PDFs / collapsed sections ---
-  let cleaned = text
-    .replace(/\s{2,}/g, " ") // collapse multiple spaces
-    .replace(
-      /\s+(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\b/gi,
-      "\n$1"
-    )
-    .replace(
-      /\b(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\s+/gi,
-      "$1\n"
+function preprocessResumeText(text) {
+  // 1. Collapse multiple spaces
+  text = text.replace(/\s{2,}/g, " ");
+
+  // 2. Fix flattened PDF lines: lowercase letter followed by uppercase after spaces → insert newline
+  text = text.replace(/([a-z])\s{2,}([A-Z])/g, "$1\n$2");
+
+  // 3. Ensure section headers start on a new line
+  text = text.replace(
+    /\b(Education|Experience|Projects|Technical Skills|Certifications|Awards|Activities|Research|Training)\b/gi,
+    "\n$1"
+  );
+
+  // 4. Normalize multiple newlines
+  text = text.replace(/\n{2,}/g, "\n");
+
+  return text.trim();
+}
+
+function splitResumeSections(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+  const sections = { header: [], education: [], experience: [], projects: [], skills: [] };
+  const sectionKeywords = {
+    education: ["education", "academic", "qualification", "training", "certification", "academics"],
+    experience: ["experience", "employment", "work", "career", "positions", "roles"],
+    projects: ["projects", "portfolio", "accomplishments", "personal projects", "initiatives", "research"],
+    skills: ["skills", "technical skills", "technologies", "tools", "competencies", "abilities"]
+  };
+
+  let currentSection = "header";
+
+  for (const line of lines) {
+    // fuzzy section detection
+    const lowerLine = line.toLowerCase();
+    let matchedSection = Object.keys(sectionKeywords).find(sec =>
+      sectionKeywords[sec].some(k => lowerLine.includes(k))
     );
 
-  logDebug("DEBUG: text length = " + cleaned.length);
+    if (matchedSection) {
+      currentSection = matchedSection;
+      continue;
+    }
 
-  // --- Split into sections ---
+    sections[currentSection].push(line);
+  }
+
+  return sections;
+}
+
+// Helper: split multiple education/experience/project entries in a single section
+function splitEntriesByDate(lines) {
+  const entries = [];
+  let buffer = [];
+
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s\d{4}\s*[-–]\s*(?:Present|\d{4})/i;
+
+  for (const line of lines) {
+    if (dateRegex.test(line) && buffer.length) {
+      entries.push(buffer.join(" "));
+      buffer = [line];
+    } else {
+      buffer.push(line);
+    }
+  }
+  if (buffer.length) entries.push(buffer.join(" "));
+  return entries;
+}
+
+// Main parsing function
+function parseResumeText(text) {
+  logDebug("🧠 Parsing resume text (robust version)...");
+
+  const cleaned = preprocessResumeText(text);
+  logDebug("DEBUG: cleaned text length = " + cleaned.length);
+
   const sections = splitResumeSections(cleaned);
 
-  const header = sections.header || [];
-  const education = sections.education || [];
-  const experience = sections.experience || [];
-  const projects = sections.projects || [];
-  const skills = sections.skills || [];
+  // Split multiple entries for education, experience, projects
+  const education = splitEntriesByDate(sections.education);
+  const experience = splitEntriesByDate(sections.experience);
+  const projects = splitEntriesByDate(sections.projects);
 
-  logDebug("DEBUG header: " + JSON.stringify(header, null, 2));
-  logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
-  logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
-  logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
-  logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
+  // Skills: split by category (':') and items (',')
+  const skills = [];
+  sections.skills.forEach(line => {
+    const parts = line.split(":");
+    if (parts.length >= 2) {
+      const category = parts[0].trim();
+      const items = parts.slice(1).join(":").split(",").map(s => s.trim()).filter(Boolean);
+      skills.push({ category, items });
+    }
+  });
 
-  // --- Extract basic info from header ---
-  const basic = extractBasicInfo(header);
+  // Extract basic info from header
+  const basic = extractBasicInfo(sections.header);
 
-  // --- Safety guard: don't wipe UI if nothing parsed ---
-  if (!education.length && !experience.length && !projects.length && !skills.length) {
-    logDebug("⚠️ No resume sections found — skipping UI update");
-    return;
-  }
+  logDebug("DEBUG: education entries = " + JSON.stringify(education, null, 2));
+  logDebug("DEBUG: experience entries = " + JSON.stringify(experience, null, 2));
+  logDebug("DEBUG: projects entries = " + JSON.stringify(projects, null, 2));
+  logDebug("DEBUG: skills entries = " + JSON.stringify(skills, null, 2));
 
   const parsed = {
     name: basic.name,
@@ -469,27 +532,25 @@ function parseResumeText(text) {
     skills
   };
 
-  // --- Update UI fields if values exist ---
+  // Update UI
   if (parsed.name) document.getElementById("name").value = parsed.name;
-  if (parsed.contact?.email)
-    document.getElementById("email").value = parsed.contact.email;
-  if (parsed.contact?.phone)
-    document.getElementById("phone").value = parsed.contact.phone;
-  if (parsed.contact?.website)
-    document.getElementById("website").value = parsed.contact.website;
+  if (parsed.contact?.email) document.getElementById("email").value = parsed.contact.email;
+  if (parsed.contact?.phone) document.getElementById("phone").value = parsed.contact.phone;
+  if (parsed.contact?.website) document.getElementById("website").value = parsed.contact.website;
 
-  ["education", "experience", "projects", "skills"].forEach(id => {
+  ["education","experience","projects","skills"].forEach(id => {
     document.getElementById(`${id}-cards`).innerHTML = "";
   });
 
-  if (education.length) education.forEach(addEducationCard);
-  if (experience.length) experience.forEach(addExperienceCard);
-  if (projects.length) projects.forEach(addProjectCard);
-  if (skills.length) skills.forEach(addSkillCard);
+  education.forEach(addEducationCard);
+  experience.forEach(addExperienceCard);
+  projects.forEach(addProjectCard);
+  skills.forEach(addSkillCard);
 
   saveToLocalStorage();
   logDebug("🎯 Resume parsed and populated successfully.");
 }
+
 
 // extractor methods 
 function extractBasicInfo(headerLines) {
