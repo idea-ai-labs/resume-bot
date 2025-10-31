@@ -49,6 +49,12 @@ function splitResumeSections(text) {
   for (let i = 0; i < lines.length; i++) {
     const rawLine = lines[i];
 
+      // --- Education-specific cleanup ---
+      if (currentSection === "education") {
+          // collapse multiple spaces to avoid splitting dates/school info
+          rawLine = rawLine.replace(/\s{2,}/g, " ");
+      }
+
     // Normalize for section header detection
     let normalized = rawLine.toLowerCase().replace(/[^a-z&\s]/g, " ").replace(/\s+/g, " ").trim();
 
@@ -111,48 +117,52 @@ function extractBasicInfo(headerLines) {
   return { name, contact: { email, phone, website } };
 }
 
+// -------- extractEducation -----
+
 function extractEducation(lines) {
   const results = [];
-  const dateRegex =
-    /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
+  
+  // Regex for dates like "Aug. 2018 – May 2021"
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/gi;
 
-  const parseOne = (chunk) => {
-  const entry = {};
+  // Regex to detect school names
+  const schoolRegex = /([A-Z][\w\s.&']+(University|College|Institute|School))/i;
 
-  // Extract all date ranges in the chunk
-  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*[-–]\s*(?:Present|\d{4})\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\.?\s?\d{4}\b/g;
-  const dates = chunk.match(dateRegex);
-  if (dates) entry.dates = dates.join(" – ");
+  // Regex to detect degree names
+  const degreeRegex = /\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i;
 
-  // Remove dates from chunk to prevent degree contamination
-  let cleanChunk = chunk.replace(dateRegex, "").trim();
-
-  // School name
-  const schoolMatch = cleanChunk.match(/([A-Z][\w\s.&']+(University|College|Institute|School))/i);
-  if (schoolMatch) entry.school = schoolMatch[0].trim();
-
-  // Degree or major
-  const degreeMatch = cleanChunk.match(/\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i);
-  if (degreeMatch) entry.degree = degreeMatch[0].trim();
-
-  // Location (city, state)
-  const locationMatch = cleanChunk.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
-  if (locationMatch) entry.location = locationMatch[0].trim();
-
-  return entry;
-};
-
-  for (const line of lines) {
+  for (let line of lines) {
     if (!line.trim()) continue;
 
-    const schoolChunks = line.split(/(?=\b[A-Z][\w\s.&']+(University|College|Institute|School)\b)/g)
-      .map(c => c.trim())
-      .filter(Boolean);
+    // Split line into multiple schools if needed
+    const parts = line.split(/(?=\b[A-Z][\w\s.&']+(University|College|Institute|School)\b)/g)
+                      .map(p => p.trim())
+                      .filter(Boolean);
 
-    schoolChunks.forEach(chunk => {
-      const entry = parseOne(chunk);
-      if (Object.keys(entry).length) results.push(entry);
-    });
+    for (const part of parts) {
+      const entry = {};
+
+      // Extract dates
+      const dates = part.match(dateRegex);
+      if (dates) {
+        entry.dates = dates.join(" – "); // join multiple dates if found
+      }
+
+      // Extract school
+      const schoolMatch = part.match(schoolRegex);
+      if (schoolMatch) entry.school = schoolMatch[0].trim();
+
+      // Extract degree
+      const degreeMatch = part.match(degreeRegex);
+      if (degreeMatch) entry.degree = degreeMatch[0].trim();
+
+      // Extract location (look for "City, ST" near school)
+      const locationMatch = part.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
+      if (locationMatch) entry.location = locationMatch[0].trim();
+
+      // Only push if at least school or degree exists
+      if (entry.school || entry.degree || entry.dates) results.push(entry);
+    }
   }
 
   return results;
