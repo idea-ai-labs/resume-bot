@@ -498,6 +498,16 @@ function splitResumeSections(text) {
   return sections;
 }
 
+function extractBasicInfo(headerLines) {
+  const joined = headerLines.join(" ");
+  const name = headerLines[0] || "Unknown";
+  const email = joined.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || "";
+  const phone = joined.match(/(\+?\d[\d .-]{8,}\d)/)?.[0] || "";
+  const website = joined.match(/(https?:\/\/[^\s]+|linkedin\.com\/[^\s]+|github\.com\/[^\s]+)/i)?.[0] || "";
+
+  return { name, contact: { email, phone, website } };
+}
+
 function extractEducation(lines) {
   const results = [];
   for (const line of lines) {
