@@ -456,7 +456,6 @@ function extractEducation(lines) {
     /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
 
   // --- Helper to extract a single record ---
-p
   const parseOne = (chunk) => {
   const entry = {};
 
