@@ -325,19 +325,15 @@ async function parsePDF(file) {
   }
 
   logDebug("✅ PDF text extracted. Parsing resume...");
-  parseResumeText(text);
+  resumeParser.parseResumeText(text);
 }
 
 async function parseDOCX(file) {
   const arrayBuffer = await file.arrayBuffer();
   const result = await window.mammoth.extractRawText({ arrayBuffer });
   logDebug("✅ DOCX text extracted. Parsing resume...");
-  parseResumeText(result.value);
+  resumeParser.parseResumeText(result.value);
 }
-
-// ------------------ Robust Parsing -----------------
-
-
 
 // ------------------ UI Render / Reset ------------------
 function renderResume(data) {
@@ -403,4 +399,3 @@ window.addProjectCard = addProjectCard;
 window.addSkillCard = addSkillCard;
 window.collectResumeData = collectResumeData;
 window.generatePDF = generatePDF;
-window.parseResumeText = parseResumeText;
