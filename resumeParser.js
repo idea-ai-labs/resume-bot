@@ -3,6 +3,8 @@
 //-----------------------------------------------------
 
 function splitResumeSections(text) {
+  logDebug(" 💐💐 resumeParser ver 3.1...");
+
   logDebug("🔍 Splitting resume sections (merged stable version)");
 
   // --- Normalize and clean ---
@@ -47,7 +49,7 @@ function splitResumeSections(text) {
   };
 
   for (let i = 0; i < lines.length; i++) {
-    const rawLine = lines[i];
+    let rawLine = lines[i];
 
       // --- Education-specific cleanup ---
       if (currentSection === "education") {
@@ -296,11 +298,11 @@ async function parseResumeText(text) {
     const projects = extractProjects(projectLines);
     const skills = extractSkills(skillsLines);
 
-    logDebug("DEBUG basic: " + JSON.stringify(basic, null, 2));
-    logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
-    logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
-    logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
-    logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
+   // logDebug("DEBUG basic: " + JSON.stringify(basic, null, 2));
+    //logDebug("DEBUG education: " + JSON.stringify(education, null, 2));
+  //  logDebug("DEBUG experience: " + JSON.stringify(experience, null, 2));
+    //logDebug("DEBUG projects: " + JSON.stringify(projects, null, 2));
+   // logDebug("DEBUG skills: " + JSON.stringify(skills, null, 2));
 
     // --- Safety guard: don't wipe UI if nothing parsed ---
     if (
