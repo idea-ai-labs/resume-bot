@@ -494,7 +494,7 @@ function splitResumeSections(text) {
 
   if (bufferEntry) sections[currentSection].push(bufferEntry);
 
-  logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
+  logDebug("DEBUG: ####split sections = " + JSON.stringify(sections, null, 2));
   return sections;
 }
 
@@ -593,7 +593,7 @@ function extractSkills(lines) {
 
 async function parseResumeText(text) {
   try {
-    logDebug("🧠 Parsing resume text...");
+    logDebug("🧠 Parsing resume text v2...");
 
     // --- Clean PDF text and force newlines around section markers ---
     let cleaned = text
