@@ -120,11 +120,62 @@ function extractBasicInfo(headerLines) {
 }
 
 // -------- extractEducation -----
-
+// -------- extractEducation -----
 function extractEducation(lines) {
   const results = [];
 
-  let lines = sectionText.split(/\n|(?=(?:[A-Z][a-z]+ (?:University|College|Institute)))/);
+  // 🧹 Normalize input (support both array or raw string)
+  let text = Array.isArray(lines) ? lines.join(" ") : (lines || "");
+
+  if (!text.trim()) return results;
+
+  // --- Regex definitions ---
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/gi;
+  const schoolRegex = /([A-Z][\w\s.&']+(University|College|Institute|School))/i;
+  const degreeRegex = /\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i;
+  const locationRegex = /\b[A-Z][a-z]+,\s*[A-Z]{2}\b/;
+
+  // --- Split into logical education blocks ---
+  const chunks = text
+    .split(/(?=\b[A-Z][\w\s.&']+(University|College|Institute|School)\b)/g)
+    .map(p => p.trim())
+    .filter(Boolean);
+
+  for (const part of chunks) {
+    const entry = {};
+
+    // Dates
+    const dates = part.match(dateRegex);
+    if (dates) entry.dates = dates.join(" – ");
+
+    // School
+    const schoolMatch = part.match(schoolRegex);
+    if (schoolMatch) entry.school = schoolMatch[0].trim();
+
+    // Degree
+    const degreeMatch = part.match(degreeRegex);
+    if (degreeMatch) entry.degree = degreeMatch[0].trim();
+
+    // Location
+    const locationMatch = part.match(locationRegex);
+    if (locationMatch) entry.location = locationMatch[0].trim();
+
+    // 💡 Handle cases where multiple degrees are mentioned for the same school
+    if (entry.school && !entry.degree && part.includes("Minor in")) {
+      entry.degree = part.match(/Bachelor[^.]+|Master[^.]+|Associate[^.]+/)?.[0]?.trim() || "";
+    }
+
+    // Only push if we found meaningful data
+    if (entry.school || entry.degree || entry.dates || entry.location) {
+      results.push(entry);
+    }
+  }
+
+  logDebug("DEBUG education: " + JSON.stringify(results, null, 2));
+  return results;
+}
+function extractEducationOld(lines) {
+  const results = [];
   
   // Regex for dates like "Aug. 2018 – May 2021"
   const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/gi;
@@ -172,6 +223,7 @@ function extractEducation(lines) {
   return results;
 }
 
+// ------- extractExperience ----
 function extractExperience(lines) {
   const results = [];
   let current = null;
