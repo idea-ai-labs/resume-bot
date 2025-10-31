@@ -642,7 +642,7 @@ function extractSkills(lines) {
 
 async function parseResumeText(text) {
   try {
-    logDebug("🧠 Parsing resume text v3...");
+    logDebug("🧠 Parsing resume text v4..");
 
     // --- Clean PDF text and force newlines around section markers ---
     let cleaned = text
