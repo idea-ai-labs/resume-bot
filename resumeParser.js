@@ -117,24 +117,30 @@ function extractEducation(lines) {
     /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
 
   const parseOne = (chunk) => {
-    const entry = {};
+  const entry = {};
 
-    const dateMatches = chunk.match(new RegExp(dateRegex, "g")) || [];
-    if (dateMatches.length) entry.dates = dateMatches.join(" – ");
+  // Extract all date ranges in the chunk
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*[-–]\s*(?:Present|\d{4})\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\.?\s?\d{4}\b/g;
+  const dates = chunk.match(dateRegex);
+  if (dates) entry.dates = dates.join(" – ");
 
-    const schoolMatch = chunk.match(/([A-Z][\w\s.&']+(University|College|Institute|School))/i);
-    if (schoolMatch) entry.school = schoolMatch[0].trim();
+  // Remove dates from chunk to prevent degree contamination
+  let cleanChunk = chunk.replace(dateRegex, "").trim();
 
-    let afterSchool = chunk;
-    if (schoolMatch) afterSchool = chunk.slice(schoolMatch.index + schoolMatch[0].length);
-    const degreeMatch = afterSchool.match(/\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i);
-    if (degreeMatch) entry.degree = degreeMatch[0].trim();
+  // School name
+  const schoolMatch = cleanChunk.match(/([A-Z][\w\s.&']+(University|College|Institute|School))/i);
+  if (schoolMatch) entry.school = schoolMatch[0].trim();
 
-    const locationMatch = chunk.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
-    if (locationMatch) entry.location = locationMatch[0].trim();
+  // Degree or major
+  const degreeMatch = cleanChunk.match(/\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i);
+  if (degreeMatch) entry.degree = degreeMatch[0].trim();
 
-    return entry;
-  };
+  // Location (city, state)
+  const locationMatch = cleanChunk.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
+  if (locationMatch) entry.location = locationMatch[0].trim();
+
+  return entry;
+};
 
   for (const line of lines) {
     if (!line.trim()) continue;
@@ -145,55 +151,6 @@ function extractEducation(lines) {
 
     schoolChunks.forEach(chunk => {
       const entry = parseOne(chunk);
-      if (Object.keys(entry).length) results.push(entry);
-    });
-  }
-
-  return results;
-}
-
-function extractEducationOld(lines) {
-  const results = [];
-  const dateRegex =
-    /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
-
-  // --- Helper to extract a single record ---
-  const parseOne = (chunk) => {
-  const entry = {};
-
-  // Extract all date ranges in this chunk
-  const dateMatches = chunk.match(new RegExp(dateRegex, "g")) || [];
-  if (dateMatches.length) {
-    entry.dates = dateMatches.join(" – "); // join multiple ranges if needed
-  }
-
-  // School name
-  const schoolMatch = chunk.match(/([A-Z][\w\s.&']+(University|College|Institute|School))/i);
-  if (schoolMatch) entry.school = schoolMatch[0].trim();
-
-  // Degree or major (try to take the part after the school name)
-  let afterSchool = chunk;
-  if (schoolMatch) afterSchool = chunk.slice(schoolMatch.index + schoolMatch[0].length);
-  const degreeMatch = afterSchool.match(/\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i);
-  if (degreeMatch) entry.degree = degreeMatch[0].trim();
-
-  // Location (city, state)
-  const locationMatch = chunk.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
-  if (locationMatch) entry.location = locationMatch[0].trim();
-
-  return entry;
-};
-
-  for (let line of lines) {
-    if (!line.trim()) continue;
-
-    // --- Split one long line into multiple schools if needed ---
-    const parts = line.split(
-      /(?=\b[A-Z][\w\s.&']+(University|College|Institute|School)\b)/g
-    ).map(p => p.trim()).filter(Boolean);
-
-    parts.forEach(part => {
-      const entry = parseOne(part);
       if (Object.keys(entry).length) results.push(entry);
     });
   }
@@ -298,7 +255,7 @@ function extractSkills(lines) {
 
 async function parseResumeText(text) {
   try {
-    logDebug("🧠 Parsing resume text resumeParser ver 1...");
+    logDebug("🧠 Parsing resume text resumeParser ver 2...");
 
     // --- Clean PDF text and force newlines around section markers ---
     let cleaned = text
