@@ -439,7 +439,7 @@ function splitResumeSections(text) {
   };
 
   let currentSection = "header";
-  let bufferEntry = null; // for multi-line entries
+  let bufferEntry = null;
 
   const sectionMarkers = {
     education: ["education","academic background","studies","qualifications","certifications","certification","training","academics"],
@@ -449,7 +449,6 @@ function splitResumeSections(text) {
   };
 
   const isSubheading = (line) => {
-    // Detect date ranges like "Jun 2020 – Present" or single word + date
     return /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*[-–]\s*(?:Present|\d{4})/i.test(line);
   };
 
@@ -461,7 +460,6 @@ function splitResumeSections(text) {
     let normalized = rawLine.toLowerCase().replace(/[^a-z&\s]/g, " ").replace(/\s+/g, " ").trim();
     normalized = normalized.replace(/\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g, m => m.replace(/\s+/g, ""));
 
-    // Detect section headers
     let matchedSection = Object.keys(sectionMarkers).find(key =>
       sectionMarkers[key].some(marker => normalized === marker)
     );
@@ -476,13 +474,16 @@ function splitResumeSections(text) {
       continue;
     }
 
-    // Handle experience/projects with multi-line entries
+    // For experience/projects, detect subheadings with dates
     if (currentSection === "experience" || currentSection === "projects") {
-      if (isSubheading(rawLine)) {
-        if (bufferEntry) sections[currentSection].push(bufferEntry);
-        bufferEntry = rawLine; // start new entry
+      if (isSubheading(rawLine) || /\|/.test(rawLine)) {
+        if (bufferEntry) {
+          sections[currentSection].push(bufferEntry);
+        }
+        bufferEntry = rawLine;
       } else {
-        bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
+        if (bufferEntry) bufferEntry += " " + rawLine;
+        else bufferEntry = rawLine;
       }
     } else {
       sections[currentSection].push(rawLine);
@@ -491,100 +492,92 @@ function splitResumeSections(text) {
     logDebug(`(line ${i}) + [${currentSection}] "${rawLine}"`);
   }
 
-  // Flush last buffered entry
-  if (bufferEntry) {
-    sections[currentSection].push(bufferEntry);
-  }
+  if (bufferEntry) sections[currentSection].push(bufferEntry);
 
   logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
   return sections;
 }
 
-function extractBasicInfo(headerLines) {
-  const joined = headerLines.join(" ");
-  const name = headerLines[0] || "Unknown";
-  const email = joined.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || "";
-  const phone = joined.match(/(\+?\d[\d .-]{8,}\d)/)?.[0] || "";
-  const website = joined.match(/(https?:\/\/[^\s]+|linkedin\.com\/[^\s]+|github\.com\/[^\s]+)/i)?.[0] || "";
-
-  return { name, contact: { email, phone, website } };
-}
-
 function extractEducation(lines) {
   const results = [];
-
-  lines.forEach(line => {
-    // Split by common delimiters to separate school, degree, location, dates
-    const parts = line.split(/,|–|-/).map(s => s.trim()).filter(Boolean);
-    if (parts.length >= 2) {
-      const schoolMatch = parts[0]; // school + city
-      const degreeMatch = parts.find(p => /\b(Bachelor|Master|Associate|Ph\.?D|Degree|Diploma|Minor)\b/i.test(p));
-      const datesMatch = parts.find(p => /\b\d{4}\b/.test(p));
-      results.push({
-        school: schoolMatch,
-        degree: degreeMatch || "",
-        dates: datesMatch || ""
-      });
+  for (const line of lines) {
+    // Split multi-degree entries if multiple universities are on one line
+    const parts = line.split(/(?=\bBachelor|\bMaster|\bAssociate|\bPh\.?D|\bDiploma|\bDegree)/i);
+    for (let part of parts) {
+      const matchDegree = part.match(/\b(Bachelor|Master|Associate|Ph\.?D|Degree|Diploma)\b.*?(?=\b[A-Z][a-z]|$)/i);
+      const matchDates = part.match(/(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.? \d{4}\s*[-–]\s*(?:Present|\d{4})/gi);
+      const school = part.replace(matchDegree ? matchDegree[0] : "", "").replace(matchDates ? matchDates.join(" ") : "", "").trim();
+      if (school || matchDegree || matchDates) {
+        results.push({
+          school: school,
+          degree: matchDegree ? matchDegree[0].trim() : "",
+          dates: matchDates ? matchDates.join(" ") : ""
+        });
+      }
     }
-  });
-
+  }
   return results;
 }
 
 function extractExperience(lines) {
   const results = [];
+  let current = {};
+  const flush = () => { if (Object.keys(current).length) { results.push({ ...current }); current = {}; } };
 
-  lines.forEach(entry => {
-    const parts = entry.split(/•/).map(s => s.trim()).filter(Boolean);
-    if (parts.length) {
-      // First part contains title, company, location, dates
-      const header = parts[0];
-      const headerMatch = header.match(/(.+?)\s+(?:at\s+)?(.+?),?\s+([A-Za-z\s]+)?\s+(\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec).+?\d{4}\s*[-–]\s*(?:Present|\d{4}))/i);
-      
-      results.push({
-        title: headerMatch?.[1] || header,
-        company: headerMatch?.[2] || "",
-        location: headerMatch?.[3] || "",
-        dates: headerMatch?.[4] || "",
-        details: parts.slice(1)
-      });
+  for (const line of lines) {
+    // Split multi-entry lines with bullet points or date ranges
+    const sublines = line.split(/(?=•|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s?\d{4})/g);
+    for (const sub of sublines) {
+      if (sub.match(/\b(Present|[A-Z][a-z]+ \d{4})\b/)) current.dates = sub.trim();
+      else if (sub.startsWith("•")) {
+        current.details = current.details || [];
+        current.details.push(sub.replace(/^•\s*/, "").trim());
+      } else if (!current.title) current.title = sub.trim();
+      else if (!current.company) current.company = sub.trim();
+      else if (!current.location) current.location = sub.trim();
+      else flush();
     }
-  });
-
+  }
+  flush();
   return results;
 }
 
 function extractProjects(lines) {
   const results = [];
-
-  lines.forEach(entry => {
-    // Split title from description by first "|", or fallback to first word + rest
-    const [titlePart, ...descParts] = entry.split("|");
-    const title = titlePart.trim();
-    const description = descParts.length ? descParts.join("|").trim() : "";
-
-    // Further split bullets if "•" exists
-    const details = description.split("•").map(s => s.trim()).filter(Boolean);
-
-    results.push({ title, description, details });
-  });
-
+  let current = {};
+  for (const line of lines) {
+    const sublines = line.split(/(?=\|)/g);
+    for (const sub of sublines) {
+      if (sub.includes("|")) {
+        if (Object.keys(current).length) results.push({ ...current });
+        const [title, ...rest] = sub.split("|");
+        current = { title: title.trim(), description: rest.join("|").trim(), details: [] };
+      } else if (sub.startsWith("•")) {
+        current.details.push(sub.replace(/^•\s*/, "").trim());
+      } else {
+        current.details.push(sub.trim());
+      }
+    }
+  }
+  if (Object.keys(current).length) results.push(current);
   return results;
 }
 
 function extractSkills(lines) {
   const results = [];
-
-  lines.forEach(line => {
-    const [category, rest] = line.split(":");
-    if (rest) {
-      results.push({
-        category: category.trim(),
-        items: rest.split(",").map(s => s.trim()).filter(Boolean)
-      });
+  for (const line of lines) {
+    // Split multiple categories if on the same line
+    const categories = line.split(/(?=[A-Z][a-z]+ ?:)/g);
+    for (const cat of categories) {
+      const [category, rest] = cat.split(":");
+      if (rest) {
+        results.push({
+          category: category.trim(),
+          items: rest.split(/,|;/).map(s => s.trim()).filter(Boolean)
+        });
+      }
     }
-  });
-
+  }
   return results;
 }
 
