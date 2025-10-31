@@ -176,7 +176,8 @@ function addProjectCard(data) {
   card.className = "card";
 
   const titleInput = createInput(data?.title, "Project Title", val => card.dataset.title = val);
-  const descInput = createInput(data?.description, "Description", val => card.dataset.description = val);
+  //const descInput = createInput(data?.description, "Description", val => card.dataset.description = val);
+  const descInput = createTextarea(data?.description, "Description", val => card.dataset.description = val);
 
   card.append(titleInput, descInput);
   card.appendChild(createRemoveButton(card));
