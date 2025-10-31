@@ -429,11 +429,11 @@ function preprocessResumeText(text) {
   // Fix duplicated words like 'ResearchResearch'
   text = text.replace(/([A-Za-z]+)\1/g, "$1 ");
 
-  // Insert newlines before and after section headers
-  text = text.replace(
-    /\b(Education|Experience|Projects|Technical Skills|Skills|Certifications|Awards|Activities|Research|Training)\b/gi,
-    "\n$1\n"
-  );
+  // Insert newlines before and after section headers (tolerant to broken OCR spacing)
+text = text.replace(
+  /\b(Edu\s*cation|Experien\s*ce|Project\s*s|Technical\s*Skil\s*ls?|Skil\s*ls?|Certifica\s*tions?|Award\s*s?|Activit\s*ies?|Researc\s*h|Train\s*ing)\b/gi,
+  "\n$1\n"
+);
 
   // Insert newlines where lowercase → uppercase transitions (common in PDFs)
   text = text.replace(/([a-z])([A-Z])/g, "$1\n$2");
