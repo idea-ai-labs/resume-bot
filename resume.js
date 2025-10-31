@@ -425,11 +425,17 @@ function splitResumeSectionsOld(text) {
 // 🧩 Resume Parsing and Populating Script (Unified)
 //-----------------------------------------------------
 
+
+
 function splitResumeSections(text) {
+  logDebug("🔍 Splitting resume sections (merged stable version)");
+
+  // --- Normalize and clean ---
   // Collapse spaced-out all-caps words like "W ORK EXPERI ENC E"
   text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
 
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
   const sections = {
     header: [],
     education: [],
@@ -442,45 +448,68 @@ function splitResumeSections(text) {
   let bufferEntry = null;
 
   const sectionMarkers = {
-    education: ["education","academic background","studies","qualifications","certifications","certification","training","academics"],
-    experience: ["experience","employment","work history","professional experience","career","work experience","positions","roles","employment history"],
-    projects: ["projects","portfolio","case studies","accomplishments","notable work","personal projects","search","initiatives"],
-    skills: ["skills","technical skills","technologies","competencies","abilities","tools","languages","proficiencies","expertise"]
+    education: [
+      "education", "academic background", "studies", "qualifications",
+      "certifications", "certification", "training", "academics"
+    ],
+    experience: [
+      "experience", "employment", "work history", "professional experience",
+      "career", "work experience", "positions", "roles", "employment history"
+    ],
+    projects: [
+      "projects", "portfolio", "case studies", "accomplishments",
+      "notable work", "personal projects", "initiatives"
+    ],
+    skills: [
+      "skills", "technical skills", "technologies", "competencies",
+      "abilities", "tools", "languages", "proficiencies", "expertise"
+    ]
   };
 
   const isSubheading = (line) => {
-    return /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*[-–]\s*(?:Present|\d{4})/i.test(line);
+    // Detects date-like patterns that indicate a new job/project block
+    return /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*[-–]\s*(?:Present|\d{4})/i.test(line);
   };
 
   for (let i = 0; i < lines.length; i++) {
     const rawLine = lines[i];
 
-    // Normalize line for section detection
+    // Normalize for section header detection
     let normalized = rawLine.toLowerCase().replace(/[^a-z&\s]/g, " ").replace(/\s+/g, " ").trim();
-    normalized = normalized.replace(/\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g, m => m.replace(/\s+/g, ""));
 
-    // Detect section change
+    // Fix spaced-out headers like "e d u c a t i o n"
+    normalized = normalized.replace(/\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g, 
+      m => m.replace(/\s+/g, "")
+    );
+
+    // --- Section header detection ---
     const matchedSection = Object.keys(sectionMarkers).find(key =>
       sectionMarkers[key].some(marker => normalized === marker)
     );
 
     if (matchedSection) {
-      if (bufferEntry) {
-        sections[currentSection].push(bufferEntry);
-        bufferEntry = null;
+      // Avoid switching on inline words like “Research Experience Assistant”
+      if (rawLine.split(" ").length > 6) {
+        // long line → likely not a pure section heading
+        logDebug(`(line ${i}) ⚠️ Ignored false section: "${rawLine}"`);
+      } else {
+        if (bufferEntry) {
+          sections[currentSection].push(bufferEntry);
+          bufferEntry = null;
+        }
+        currentSection = matchedSection;
+        logDebug(`(line ${i}) → Switching to section: ${matchedSection}`);
+        continue;
       }
-      currentSection = matchedSection;
-      logDebug(`(line ${i}) → Switching to section: ${matchedSection}`);
-      continue;
     }
 
-    // Buffer bullets under experience/projects
+    // --- Handle Experience/Projects buffering ---
     if (currentSection === "experience" || currentSection === "projects") {
       if (isSubheading(rawLine) || /^[A-Z]/.test(rawLine)) {
         if (bufferEntry) sections[currentSection].push(bufferEntry);
         bufferEntry = rawLine;
       } else {
-        bufferEntry = bufferEntry ? bufferEntry + "\n" + rawLine : rawLine;
+        bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
       }
     } else {
       sections[currentSection].push(rawLine);
@@ -489,11 +518,13 @@ function splitResumeSections(text) {
     logDebug(`(line ${i}) + [${currentSection}] "${rawLine}"`);
   }
 
+  // --- Flush last buffered entry ---
   if (bufferEntry) sections[currentSection].push(bufferEntry);
 
   logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
   return sections;
 }
+
 
 function extractBasicInfo(headerLines) {
   const joined = headerLines.join(" ");
@@ -509,34 +540,44 @@ function extractEducation(lines) {
   const results = [];
   let current = {};
 
-  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
+  const dateRegex =
+    /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
 
   for (const line of lines) {
     if (!line.trim()) continue;
 
-    // Check if line contains a degree
+    // --- Handle multiple schools in one line (merged line case) ---
+    // Example: "Southwestern University Georgetown, TX Bachelor ... Blinn College Bryan, TX Associate’s ..."
+    const multiSchoolMatch = line.match(/([A-Z][\w\s.&']+University|College|Institute)[^A-Z]*(?=[A-Z][\w\s.&']+(University|College|Institute)|$)/g);
+    if (multiSchoolMatch && multiSchoolMatch.length > 1) {
+      // Split by school name occurrences
+      const parts = line.split(/(?=[A-Z][\w\s.&']+(University|College|Institute))/g).map(p => p.trim()).filter(Boolean);
+      parts.forEach(part => {
+        const sub = extractEducation([part]);
+        if (sub.length) results.push(sub[0]);
+      });
+      continue;
+    }
+
+    // --- Normal parsing logic ---
     if (line.match(/\b(Bachelor|Master|Associate|Ph\.?D|Degree|Diploma)\b/i)) {
       current.degree = line.trim();
     } 
-    // Check if line contains dates
     else if (dateRegex.test(line)) {
       current.dates = line.trim();
       results.push({ ...current });
       current = {};
     } 
-    // If we already have a school, append remaining lines as location or minor
     else if (!current.school) {
       current.school = line.trim();
     } 
     else if (!current.location) {
       current.location = line.trim();
     } 
-    // If neither degree, dates, nor school/location, append to degree (like Minor or continuation)
     else if (current.degree) {
       current.degree += "\n" + line.trim();
     } 
     else {
-      // Fallback: store in school if degree missing
       current.school += "\n" + line.trim();
     }
   }
@@ -642,7 +683,7 @@ function extractSkills(lines) {
 
 async function parseResumeText(text) {
   try {
-    logDebug("🧠 Parsing resume text v4..");
+    logDebug("🧠 Parsing resume text v5.....");
 
     // --- Clean PDF text and force newlines around section markers ---
     let cleaned = text
@@ -664,7 +705,7 @@ async function parseResumeText(text) {
     const projectLines = sections.projects || [];
     const skillsLines = sections.skills || [];
 
-    logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
+   // logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
 
     // --- Extract data from each section ---
     const basic = extractBasicInfo(headerLines);
