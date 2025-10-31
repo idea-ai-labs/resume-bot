@@ -453,6 +453,47 @@ function extractBasicInfo(headerLines) {
 function extractEducation(lines) {
   const results = [];
   const dateRegex =
+    /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
+
+  const parseOne = (chunk) => {
+    const entry = {};
+
+    const dateMatches = chunk.match(new RegExp(dateRegex, "g")) || [];
+    if (dateMatches.length) entry.dates = dateMatches.join(" – ");
+
+    const schoolMatch = chunk.match(/([A-Z][\w\s.&']+(University|College|Institute|School))/i);
+    if (schoolMatch) entry.school = schoolMatch[0].trim();
+
+    let afterSchool = chunk;
+    if (schoolMatch) afterSchool = chunk.slice(schoolMatch.index + schoolMatch[0].length);
+    const degreeMatch = afterSchool.match(/\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i);
+    if (degreeMatch) entry.degree = degreeMatch[0].trim();
+
+    const locationMatch = chunk.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
+    if (locationMatch) entry.location = locationMatch[0].trim();
+
+    return entry;
+  };
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+
+    const schoolChunks = line.split(/(?=\b[A-Z][\w\s.&']+(University|College|Institute|School)\b)/g)
+      .map(c => c.trim())
+      .filter(Boolean);
+
+    schoolChunks.forEach(chunk => {
+      const entry = parseOne(chunk);
+      if (Object.keys(entry).length) results.push(entry);
+    });
+  }
+
+  return results;
+}
+
+function extractEducationOld(lines) {
+  const results = [];
+  const dateRegex =
     /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
 
   // --- Helper to extract a single record ---
