@@ -120,110 +120,120 @@ function extractBasicInfo(headerLines) {
 }
 
 // -------- extractEducation -----
-// -------- extractEducation -----
+
 function extractEducation(lines) {
   const results = [];
 
   // 🧹 Normalize input (support both array or raw string)
-  let text = Array.isArray(lines) ? lines.join(" ") : (lines || "");
-
+  let text = Array.isArray(lines) ? lines.join("\n") : (lines || "");
   if (!text.trim()) return results;
 
   // --- Regex definitions ---
-  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/gi;
-  const schoolRegex = /([A-Z][\w\s.&']+(University|College|Institute|School))/i;
-  const degreeRegex = /\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i;
-  const locationRegex = /\b[A-Z][a-z]+,\s*[A-Z]{2}\b/;
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}(?:\s*[-–]\s*(?:Present|\d{4}))?/gi;
+  const schoolRegex = /([A-Z][\w\s.&'’-]+(?:University|College|Institute|School|Academy|Polytechnic))/i;
+  const degreeRegex = /\b(Bachelor(?:'s)?|Master(?:'s)?|Associate(?:'s)?|Ph\.?D|Diploma|Degree|B\.A\.|B\.S\.|M\.S\.|M\.A\.)[^,•\n]*/i;
+  const locationRegex = /\b[A-Z][a-zA-Z.\- ]+,\s*[A-Z]{2}\b/; // e.g. "Georgetown, TX"
 
   // --- Split into logical education blocks ---
+  // Split at school-like tokens, but keep any leading text with the school token.
   const chunks = text
-    .split(/(?=\b[A-Z][\w\s.&']+(University|College|Institute|School)\b)/g)
+    .split(/(?=\b[A-Z][\w\s.&'’-]+(?:University|College|Institute|School|Academy|Polytechnic)\b)/g)
     .map(p => p.trim())
     .filter(Boolean);
 
-  for (const part of chunks) {
-    const entry = {};
+  for (const rawPart of chunks) {
+    // Work on a copy
+    const part = rawPart.replace(/\s+/g, " ").trim();
+    if (!part) continue;
 
-    // Dates
-    const dates = part.match(dateRegex);
-    if (dates) entry.dates = dates.join(" – ");
+    // Extract dates first (may be multiple)
+    const datesFound = Array.from(part.matchAll(dateRegex)).map(m => m[0].trim());
+    const dates = datesFound.length ? datesFound.join(" – ") : "";
 
-    // School
-    const schoolMatch = part.match(schoolRegex);
-    if (schoolMatch) entry.school = schoolMatch[0].trim();
+    // Remove date substrings from a cleaned copy so degree/school extraction is not polluted
+    let clean = part.replace(dateRegex, "").replace(/\s{2,}/g, " ").trim();
 
-    // Degree
-    const degreeMatch = part.match(degreeRegex);
-    if (degreeMatch) entry.degree = degreeMatch[0].trim();
+    // Extract school
+    const schoolMatch = clean.match(schoolRegex);
+    const school = schoolMatch ? schoolMatch[0].trim() : "";
 
-    // Location
-    const locationMatch = part.match(locationRegex);
-    if (locationMatch) entry.location = locationMatch[0].trim();
-
-    // 💡 Handle cases where multiple degrees are mentioned for the same school
-    if (entry.school && !entry.degree && part.includes("Minor in")) {
-      entry.degree = part.match(/Bachelor[^.]+|Master[^.]+|Associate[^.]+/)?.[0]?.trim() || "";
+    // Extract location (prefer a location near the school name if possible)
+    // Try to find a location substring after the school name in original part
+    let location = "";
+    if (school) {
+      const afterSchool = part.slice(part.indexOf(school) + school.length);
+      const locMatch = afterSchool.match(locationRegex) || part.match(locationRegex);
+      if (locMatch) location = locMatch[0].trim();
+    } else {
+      const locMatch = part.match(locationRegex);
+      if (locMatch) location = locMatch[0].trim();
     }
 
-    // Only push if we found meaningful data
-    if (entry.school || entry.degree || entry.dates || entry.location) {
+    // Extract degree from cleaned (dates removed)
+    let degree = "";
+    const degreeMatch = clean.match(degreeRegex);
+    if (degreeMatch) {
+      degree = degreeMatch[0].trim();
+      // strip trailing punctuation or stray year fragments
+      degree = degree.replace(/[,;:.–\-\d]+$/, "").trim();
+    } else {
+      // As fallback, look for "Minor in ..." or "Major: ..." or common patterns
+      const minorMatch = clean.match(/\b(Minor in|Minor:|Major in|Concentration in)\s+([^,\n]+)/i);
+      if (minorMatch) degree = (minorMatch[0] || "").trim();
+    }
+
+    const entry = {};
+    if (school) entry.school = school;
+    if (degree) entry.degree = degree;
+    if (location) entry.location = location;
+    if (dates) entry.dates = dates;
+
+    // If chunk contains only a date (no school/degree), push a minimal entry for later merge
+    if (!entry.school && !entry.degree && entry.dates) {
+      results.push({ dates: entry.dates });
+    } else if (entry.school || entry.degree || entry.dates || entry.location) {
       results.push(entry);
     }
   }
 
-  logDebug("DEBUG education: " + JSON.stringify(results, null, 2));
-  return results;
-}
-function extractEducationOld(lines) {
-  const results = [];
-  
-  // Regex for dates like "Aug. 2018 – May 2021"
-  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/gi;
-
-  // Regex to detect school names
-  const schoolRegex = /([A-Z][\w\s.&']+(University|College|Institute|School))/i;
-
-  // Regex to detect degree names
-  const degreeRegex = /\b(Bachelor|Master|Associate|Ph\.?D|Diploma|Degree)[^,•\n]*/i;
-
-  for (let line of lines) {
-    if (!line.trim()) continue;
-
-    // Split line into multiple schools if needed
-    const parts = line.split(/(?=\b[A-Z][\w\s.&']+(University|College|Institute|School)\b)/g)
-                      .map(p => p.trim())
-                      .filter(Boolean);
-
-    for (const part of parts) {
-      const entry = {};
-
-      // Extract dates
-      const dates = part.match(dateRegex);
-      if (dates) {
-        entry.dates = dates.join(" – "); // join multiple dates if found
+  // --- Post-process: merge date-only fragments into previous result when appropriate ---
+  for (let i = 0; i < results.length; i++) {
+    const e = results[i];
+    if ((!e.school && !e.degree) && e.dates) {
+      // merge into previous if exists
+      if (i > 0) {
+        const prev = results[i - 1];
+        // if prev has dates and the current dates look like an end-year, try to combine intelligently
+        if (prev.dates && !prev.dates.includes("–") && e.dates) {
+          prev.dates = prev.dates + " – " + e.dates;
+        } else if (!prev.dates) {
+          prev.dates = e.dates;
+        } else {
+          // as fallback, append with " / "
+          prev.dates = prev.dates + " / " + e.dates;
+        }
+        // mark for removal
+        e._remove = true;
       }
-
-      // Extract school
-      const schoolMatch = part.match(schoolRegex);
-      if (schoolMatch) entry.school = schoolMatch[0].trim();
-
-      // Extract degree
-      const degreeMatch = part.match(degreeRegex);
-      if (degreeMatch) entry.degree = degreeMatch[0].trim();
-
-      // Extract location (look for "City, ST" near school)
-      const locationMatch = part.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
-      if (locationMatch) entry.location = locationMatch[0].trim();
-
-      // Only push if at least school or degree exists
-      if (entry.school || entry.degree || entry.dates) results.push(entry);
     }
   }
+  // remove marked
+  const filtered = results.filter(r => !r._remove);
 
-  return results;
+  // Final tidy: normalize whitespace in dates and trim fields
+  filtered.forEach(r => {
+    if (r.dates) r.dates = r.dates.replace(/\s+/g, " ").replace(/\s*–\s*/, " – ").trim();
+    if (r.degree) r.degree = r.degree.replace(/\s+/g, " ").trim();
+    if (r.school) r.school = r.school.replace(/\s+/g, " ").trim();
+    if (r.location) r.location = r.location.replace(/\s+/g, " ").trim();
+  });
+
+  //logDebug("DEBUG education: " + JSON.stringify(filtered, null, 2));
+  return filtered;
 }
 
 // ------- extractExperience ----
+
 function extractExperience(lines) {
   const results = [];
   let current = null;
