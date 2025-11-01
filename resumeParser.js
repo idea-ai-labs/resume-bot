@@ -87,16 +87,25 @@ function splitResumeSections(text) {
     }
 
     // --- Handle Experience/Projects buffering ---
+
+
     if (currentSection === "experience" || currentSection === "projects") {
-      if (isSubheading(rawLine) || /^[A-Z]/.test(rawLine)) {
-        if (bufferEntry) sections[currentSection].push(bufferEntry);
-        bufferEntry = rawLine;
-      } else {
-        bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
-      }
-    } else {
-      sections[currentSection].push(rawLine);
+  const nextLine = lines[i + 1] || "";
+  const looksLikeContinuation =
+    /^[a-z]/.test(nextLine) === false && !isSubheading(nextLine);
+
+  if (isSubheading(rawLine)) {
+    if (bufferEntry) {
+      sections[currentSection].push(bufferEntry.trim());
+      bufferEntry = null;
     }
+    bufferEntry = rawLine;
+  } else if (looksLikeContinuation && !isSubheading(rawLine)) {
+    bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
+  } else {
+    bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
+  }
+}
 
     logDebug(`(line ${i}) + [${currentSection}] "${rawLine}"`);
   }
