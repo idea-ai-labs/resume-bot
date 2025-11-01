@@ -233,84 +233,110 @@ function extractEducation(lines) {
 }
 
 // ------- extractExperience ----
+// -------- extractExperience ---------
 function extractExperience(lines) {
   const results = [];
-
-  // Normalize input (support array or string)
   const text = Array.isArray(lines) ? lines.join("\n") : lines || "";
+
   if (!text.trim()) return results;
 
+  // Regex to match dates like "June 2020 – Present" or "Sep. 2018 – May 2021"
   const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/gi;
 
-  // Split by lines, filter empty
-  const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  // Split by line breaks or bullet points
+  const chunks = text.split(/(?:\n|•)/).map(l => l.trim()).filter(Boolean);
 
-  for (let line of rawLines) {
+  let buffer = null;
+
+  for (const chunk of chunks) {
+    // Skip small fragments
+    if (chunk.length < 3) continue;
+
     const entry = { title: "", company: "", location: "", dates: "", details: [] };
 
-    // Extract dates
-    const datesMatch = line.match(dateRegex);
+    // Extract dates first
+    const datesMatch = chunk.match(dateRegex);
     if (datesMatch) {
-      entry.dates = datesMatch[0].trim();
+      entry.dates = datesMatch.join(" – ");
     }
 
-    // Split around dates to get title/company/location vs details
-    let parts = line.split(datesMatch ? datesMatch[0] : "");
-    let pre = parts[0] || "";
-    let post = parts[1] || "";
+    // Attempt to extract location (last "City, ST" before details)
+    const locMatch = chunk.match(/\b[A-Z][a-z]+,\s*[A-Z]{2}\b/);
+    if (locMatch) entry.location = locMatch[0].trim();
 
-    // Extract company/location from pre
-    // Example: "Assistant June 2020 – Present Texas A&M University College Station, TX"
-    // Heuristic: last "City, ST" is location, before that is company, rest is title
-    const locationMatch = pre.match(/\b[A-Z][\w\s]+,\s*[A-Z]{2}\b/);
-    if (locationMatch) {
-      entry.location = locationMatch[0].trim();
-      const beforeLoc = pre.slice(0, locationMatch.index).trim();
-      const companyParts = beforeLoc.split(/\s{2,}| at |, /i);
-      entry.company = companyParts.pop()?.trim() || "";
-      entry.title = companyParts.join(" ").trim() || "";
+    // Extract title and company heuristically:
+    // Take text before first date as "title/company block"
+    let preDate = chunk.split(entry.dates)[0].trim();
+    if (preDate) {
+      // Try splitting by known delimiters like "at" or capitalized company patterns
+      const atSplit = preDate.split(/\s+at\s+/i);
+      if (atSplit.length === 2) {
+        entry.title = atSplit[0].trim();
+        entry.company = atSplit[1].trim();
+      } else {
+        // fallback: first capitalized phrase(s) as title, rest as company
+        const words = preDate.split(" ");
+        let idx = 0;
+        while (idx < words.length && /^[A-Z]/.test(words[idx])) idx++;
+        entry.title = words.slice(0, idx).join(" ").trim();
+        entry.company = words.slice(idx).join(" ").trim();
+      }
+    }
+
+    // Everything after dates can be treated as details
+    const postDate = chunk.split(entry.dates)[1] || "";
+    if (postDate.trim()) {
+      entry.details = postDate.split(/•/).map(d => d.trim()).filter(Boolean);
+    }
+
+    // Merge with previous buffer if it looks like continuation (no title)
+    if (buffer && !entry.title) {
+      buffer.details.push(...[entry.company, ...entry.details].filter(Boolean));
     } else {
-      // fallback
-      entry.title = pre.trim();
+      if (entry.title || entry.company || entry.details.length) results.push(entry);
+      buffer = entry;
     }
-
-    // Split post part into details
-    entry.details = post.split(/•|\n|;|–/).map(d => d.trim()).filter(Boolean);
-
-    results.push(entry);
   }
 
   logDebug("DEBUG experience: " + JSON.stringify(results, null, 2));
   return results;
 }
 
-// -------- extractExperience -----
-
-// ------- extractProjects -----
+// -------- extractProjects ---------
 function extractProjects(lines) {
   const results = [];
-
   const text = Array.isArray(lines) ? lines.join("\n") : lines || "";
+
   if (!text.trim()) return results;
 
-  const projectLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  // Split projects by either newlines or pipe (|) boundaries
+  const chunks = text.split(/\n|(?=\|)/).map(l => l.trim()).filter(Boolean);
 
-  for (let line of projectLines) {
-    // Heuristic: split by "|"
-    const [titlePart, techPart, ...descParts] = line.split("|").map(p => p.trim()).filter(Boolean);
-    const entry = { title: "", description: "", technologies: [] };
+  for (const chunk of chunks) {
+    if (chunk.length < 3) continue;
 
-    if (titlePart) entry.title = titlePart;
-    if (techPart) entry.technologies = techPart.split(/,|\s+/).map(t => t.trim()).filter(Boolean);
+    const entry = { title: "", description: "", technologies: [], dates: "" };
 
-    // Remaining text → description
-    entry.description = descParts.join(" ").trim() || "";
+    // Attempt to split title | tech | date
+    const pipeSplit = chunk.split("|").map(p => p.trim());
+    if (pipeSplit.length >= 2) {
+      entry.title = pipeSplit[0];
+      entry.technologies = pipeSplit[1].split(/,|\s+/).map(t => t.trim()).filter(Boolean);
+      entry.description = pipeSplit.slice(2).join(" | ").trim();
+    } else {
+      // fallback: take first capitalized phrase as title, rest as description
+      const words = chunk.split(" ");
+      let idx = 0;
+      while (idx < words.length && /^[A-Z]/.test(words[idx])) idx++;
+      entry.title = words.slice(0, idx).join(" ").trim();
+      entry.description = words.slice(idx).join(" ").trim();
+    }
 
-    // If no "|" found, fallback: take first 3 words as title, rest as description
-    if (!entry.title && line) {
-      const words = line.split(" ");
-      entry.title = words.slice(0, 3).join(" ");
-      entry.description = words.slice(3).join(" ");
+    // Attempt to extract dates from description
+    const dateMatch = entry.description.match(/\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/gi);
+    if (dateMatch) {
+      entry.dates = dateMatch.join(" – ");
+      entry.description = entry.description.replace(dateMatch.join("|"), "").trim();
     }
 
     results.push(entry);
