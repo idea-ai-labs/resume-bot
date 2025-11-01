@@ -233,161 +233,95 @@ function extractEducation(lines) {
 }
 
 // ------- extractExperience ----
-
-// -------- extractExperience -----
 function extractExperience(lines) {
   const results = [];
 
-  // Normalize input (array or string)
-  let text = Array.isArray(lines) ? lines.join("\n") : (lines || "");
+  // Normalize input (support array or string)
+  const text = Array.isArray(lines) ? lines.join("\n") : lines || "";
   if (!text.trim()) return results;
 
-  // --- Regex definitions ---
-  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}(?:\s*[-–]\s*(?:Present|\d{4}))?/gi;
-  const titleRegex = /\b([A-Z][A-Za-z/&+\-–,\s]{2,})\b/;
-  const companyRegex = /\b(?:at\s+)?([A-Z][\w\s.&'’-]+(?:Inc\.?|LLC|Corporation|Company|Co\.|University|College|Institute|Lab|Technologies|Systems|Group|Department))\b/i;
-  const locationRegex = /\b[A-Z][a-zA-Z.\- ]+,\s*[A-Z]{2}\b/;
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/gi;
 
-  // --- Split chunks by recognizable job boundaries ---
-  const chunks = text
-    .split(/(?=\b[A-Z][\w\s/&'’-]+(?:Inc\.?|LLC|University|College|Institute|Technologies|Company|Department)\b)/g)
-    .map(s => s.trim())
-    .filter(Boolean);
+  // Split by lines, filter empty
+  const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-  for (const rawPart of chunks) {
-    const part = rawPart.replace(/\s+/g, " ").trim();
-    if (!part) continue;
+  for (let line of rawLines) {
+    const entry = { title: "", company: "", location: "", dates: "", details: [] };
 
-    const entry = {};
+    // Extract dates
+    const datesMatch = line.match(dateRegex);
+    if (datesMatch) {
+      entry.dates = datesMatch[0].trim();
+    }
 
-    // Extract and remove dates early
-    const datesFound = Array.from(part.matchAll(dateRegex)).map(m => m[0].trim());
-    const dates = datesFound.length ? datesFound.join(" – ") : "";
-    let clean = part.replace(dateRegex, "").replace(/\s{2,}/g, " ").trim();
+    // Split around dates to get title/company/location vs details
+    let parts = line.split(datesMatch ? datesMatch[0] : "");
+    let pre = parts[0] || "";
+    let post = parts[1] || "";
 
-    // Extract company
-    const companyMatch = clean.match(companyRegex);
-    const company = companyMatch ? companyMatch[1].trim() : "";
-
-    // Extract title — usually before company name
-    let title = "";
-    if (company) {
-      const titlePart = clean.slice(0, clean.indexOf(company));
-      const titleMatch = titlePart.match(/\b[A-Z][\w\s/&'’-]{2,}$/);
-      if (titleMatch) title = titleMatch[0].trim();
+    // Extract company/location from pre
+    // Example: "Assistant June 2020 – Present Texas A&M University College Station, TX"
+    // Heuristic: last "City, ST" is location, before that is company, rest is title
+    const locationMatch = pre.match(/\b[A-Z][\w\s]+,\s*[A-Z]{2}\b/);
+    if (locationMatch) {
+      entry.location = locationMatch[0].trim();
+      const beforeLoc = pre.slice(0, locationMatch.index).trim();
+      const companyParts = beforeLoc.split(/\s{2,}| at |, /i);
+      entry.company = companyParts.pop()?.trim() || "";
+      entry.title = companyParts.join(" ").trim() || "";
     } else {
-      const titleMatch = clean.match(titleRegex);
-      if (titleMatch) title = titleMatch[0].trim();
+      // fallback
+      entry.title = pre.trim();
     }
 
-    // Extract location (after company)
-    let location = "";
-    if (company) {
-      const afterCompany = clean.slice(clean.indexOf(company) + company.length);
-      const locMatch = afterCompany.match(locationRegex);
-      if (locMatch) location = locMatch[0].trim();
-    } else {
-      const locMatch = clean.match(locationRegex);
-      if (locMatch) location = locMatch[0].trim();
-    }
+    // Split post part into details
+    entry.details = post.split(/•|\n|;|–/).map(d => d.trim()).filter(Boolean);
 
-    // Extract bullet-style details (if any)
-    const details = [];
-    const bulletParts = rawPart.split(/[•\n]/).map(s => s.trim()).filter(Boolean);
-    for (const bp of bulletParts) {
-      if (bp.length > 15 && !bp.match(dateRegex)) details.push(bp);
-    }
-
-    if (title) entry.title = title;
-    if (company) entry.company = company;
-    if (location) entry.location = location;
-    if (dates) entry.dates = dates;
-    if (details.length) entry.details = details;
-
-    // Handle stray date-only chunks
-    if (!entry.title && !entry.company && entry.dates) {
-      if (results.length) {
-        const prev = results[results.length - 1];
-        prev.dates = prev.dates ? prev.dates + " – " + entry.dates : entry.dates;
-      }
-    } else {
-      results.push(entry);
-    }
-  }
-
-  // Cleanup formatting
-  for (const r of results) {
-    if (r.dates) r.dates = r.dates.replace(/\s+/g, " ").replace(/\s*–\s*/, " – ").trim();
-    if (r.title) r.title = r.title.replace(/\s+/g, " ").trim();
-    if (r.company) r.company = r.company.replace(/\s+/g, " ").trim();
-    if (r.location) r.location = r.location.replace(/\s+/g, " ").trim();
+    results.push(entry);
   }
 
   logDebug("DEBUG experience: " + JSON.stringify(results, null, 2));
   return results;
 }
 
-// ------- extractProjects -----
+// -------- extractExperience -----
 
-// -------- extractProjects -----
+// ------- extractProjects -----
 function extractProjects(lines) {
   const results = [];
 
-  // Normalize input
-  let text = Array.isArray(lines) ? lines.join("\n") : (lines || "");
+  const text = Array.isArray(lines) ? lines.join("\n") : lines || "";
   if (!text.trim()) return results;
 
-  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}(?:\s*[-–]\s*(?:Present|\d{4}))?/gi;
-  const techRegex = /\b(Python|Java|C\+\+|JavaScript|React|Flask|Django|Node\.js|SQL|Docker|AWS|TensorFlow|Keras|PostgreSQL|HTML|CSS|Git)\b/gi;
+  const projectLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-  // Split projects by " | " or newline where capitalized names occur
-  const chunks = text
-    .split(/(?=\b[A-Z][A-Za-z0-9\s+()'’.,-]+[|:])/g)
-    .map(s => s.trim())
-    .filter(Boolean);
+  for (let line of projectLines) {
+    // Heuristic: split by "|"
+    const [titlePart, techPart, ...descParts] = line.split("|").map(p => p.trim()).filter(Boolean);
+    const entry = { title: "", description: "", technologies: [] };
 
-  for (const rawPart of chunks) {
-    const part = rawPart.replace(/\s+/g, " ").trim();
-    if (!part) continue;
+    if (titlePart) entry.title = titlePart;
+    if (techPart) entry.technologies = techPart.split(/,|\s+/).map(t => t.trim()).filter(Boolean);
 
-    const entry = {};
+    // Remaining text → description
+    entry.description = descParts.join(" ").trim() || "";
 
-    // Extract and remove dates
-    const datesFound = Array.from(part.matchAll(dateRegex)).map(m => m[0].trim());
-    const dates = datesFound.length ? datesFound.join(" – ") : "";
-    let clean = part.replace(dateRegex, "").replace(/\s{2,}/g, " ").trim();
-
-    // Extract title — before first "|" or ":"
-    const titleMatch = clean.match(/^([A-Z][A-Za-z0-9\s+()'’.,-]+)/);
-    const title = titleMatch ? titleMatch[1].trim().replace(/\|.*$/, "") : "";
-
-    // Extract technologies
-    const techs = Array.from(clean.matchAll(techRegex)).map(m => m[0]);
-
-    // Extract bullet-style or descriptive sentences
-    const details = [];
-    const bulletParts = rawPart.split(/[•\n]/).map(s => s.trim()).filter(Boolean);
-    for (const bp of bulletParts) {
-      if (bp.length > 15 && !bp.match(dateRegex)) details.push(bp);
+    // If no "|" found, fallback: take first 3 words as title, rest as description
+    if (!entry.title && line) {
+      const words = line.split(" ");
+      entry.title = words.slice(0, 3).join(" ");
+      entry.description = words.slice(3).join(" ");
     }
 
-    if (title) entry.title = title;
-    if (techs.length) entry.technologies = [...new Set(techs)];
-    if (dates) entry.dates = dates;
-    if (details.length) entry.details = details;
-
     results.push(entry);
-  }
-
-  // Cleanup formatting
-  for (const r of results) {
-    if (r.title) r.title = r.title.replace(/\s+/g, " ").trim();
-    if (r.dates) r.dates = r.dates.replace(/\s+/g, " ").replace(/\s*–\s*/, " – ").trim();
   }
 
   logDebug("DEBUG projects: " + JSON.stringify(results, null, 2));
   return results;
 }
+
+// -------- extractProjects -----
+
 
 // ------- extractSkills ------
 
