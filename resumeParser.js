@@ -3,6 +3,125 @@
 //-----------------------------------------------------
 
 function splitResumeSections(text) {
+  logDebug("🔍 Splitting resume sections (merged stable version)");
+
+  // --- Normalize and clean ---
+  // Collapse spaced-out all-caps words like "W ORK EXPERI ENC E"
+  text = text.replace(/\b([A-Z])\s+(?=[A-Z]\b)/g, "$1");
+
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+  const sections = {
+    header: [],
+    education: [],
+    experience: [],
+    projects: [],
+    skills: []
+  };
+
+  let currentSection = "header";
+  let bufferEntry = null; // string accumulator for experience/projects
+
+  const sectionMarkers = {
+    education: [
+      "education", "academic background", "studies", "qualifications",
+      "certifications", "certification", "training", "academics"
+    ],
+    experience: [
+      "experience", "employment", "work history", "professional experience",
+      "career", "work experience", "positions", "roles", "employment history"
+    ],
+    projects: [
+      "projects", "portfolio", "case studies", "accomplishments",
+      "notable work", "personal projects", "initiatives"
+    ],
+    skills: [
+      "skills", "technical skills", "technologies", "competencies",
+      "abilities", "tools", "languages", "proficiencies", "expertise"
+    ]
+  };
+
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s?\d{4}\s*(?:[-–]\s*(?:Present|\d{4}))?/i;
+  const companyOrSchoolRegex = /\b(University|College|Institute|School|Inc|LLC|Ltd|Corp|Corporation|Company)\b/i;
+  const isSubheading = (line) => dateRegex.test(line);
+
+  for (let i = 0; i < lines.length; i++) {
+    let rawLine = lines[i];
+
+    // --- Education-specific small cleanup (preserve spacing for parsing) ---
+    if (currentSection === "education") {
+      rawLine = rawLine.replace(/\s{2,}/g, " ");
+    }
+
+    // Normalize for section header detection
+    let normalized = rawLine.toLowerCase().replace(/[^a-z&\s]/g, " ").replace(/\s+/g, " ").trim();
+
+    // Fix spaced-out headers like "e d u c a t i o n"
+    normalized = normalized.replace(/\b(e d u c a t i o n|w o r k e x p e r i e n c e|p r o j e c t s|t e c h n i c a l s k i l l s)\b/g, 
+      m => m.replace(/\s+/g, "")
+    );
+
+    // --- Section header detection ---
+    const matchedSection = Object.keys(sectionMarkers).find(key =>
+      sectionMarkers[key].some(marker => normalized === marker)
+    );
+
+    if (matchedSection) {
+      // Avoid switching on inline words like “Research Experience Assistant”
+      if (rawLine.split(" ").length > 6) {
+        logDebug(`(line ${i}) ⚠️ Ignored false section: "${rawLine}"`);
+      } else {
+        // flush any buffered entry for previous section
+        if (bufferEntry) {
+          sections[currentSection].push(bufferEntry.trim());
+          bufferEntry = null;
+        }
+        currentSection = matchedSection;
+        logDebug(`(line ${i}) → Switching to section: ${matchedSection}`);
+        continue;
+      }
+    }
+
+    // --- Handle Experience/Projects buffering (NEW safer logic) ---
+    if (currentSection === "experience" || currentSection === "projects") {
+      // If this line is a bullet, append as detail to current buffer (if any),
+      // or start a new buffer with the bullet if none present.
+      if (rawLine.startsWith("•")) {
+        if (!bufferEntry) bufferEntry = "";
+        bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
+        // bullets usually indicate continuation; don't flush immediately
+        continue;
+      }
+
+      // If the line contains a date OR a company/school token OR a project '|' delimiter,
+      // treat it as a strong boundary marker — append to the buffer and then flush it as one entry.
+      if (dateRegex.test(rawLine) || companyOrSchoolRegex.test(rawLine) || rawLine.includes("|")) {
+        bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
+        sections[currentSection].push(bufferEntry.trim());
+        bufferEntry = null;
+        continue;
+      }
+
+      // Otherwise this is likely part of the title/description — accumulate it.
+      bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
+      // do not flush yet; wait for a date/company/bullet to mark the end
+      logDebug(`(line ${i}) (buffering ${currentSection}) "${rawLine}"`);
+      continue;
+    }
+
+    // --- Default: push into the current non-experience/projects section directly ---
+    sections[currentSection].push(rawLine);
+    logDebug(`(line ${i}) + [${currentSection}] "${rawLine}"`);
+  }
+
+  // --- Flush last buffered entry (if any) ---
+  if (bufferEntry) sections[currentSection].push(bufferEntry.trim());
+
+  logDebug("DEBUG: split sections = " + JSON.stringify(sections, null, 2));
+  return sections;
+}
+
+function splitResumeSectionsOld(text) {
   logDebug(" 💐💐 resumeParser ver 3.2....");
 
   logDebug("🔍 Splitting resume sections (merged stable version)");
@@ -88,25 +207,16 @@ function splitResumeSections(text) {
 
     // --- Handle Experience/Projects buffering ---
 
-
     if (currentSection === "experience" || currentSection === "projects") {
-  const nextLine = lines[i + 1] || "";
-  const looksLikeContinuation =
-    /^[a-z]/.test(nextLine) === false && !isSubheading(nextLine);
-
-  if (isSubheading(rawLine)) {
-    if (bufferEntry) {
-      sections[currentSection].push(bufferEntry.trim());
-      bufferEntry = null;
+      if (isSubheading(rawLine) || /^[A-Z]/.test(rawLine)) {
+        if (bufferEntry) sections[currentSection].push(bufferEntry);
+        bufferEntry = rawLine;
+      } else {
+        bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
+      }
+    } else {
+      sections[currentSection].push(rawLine);
     }
-    bufferEntry = rawLine;
-  } else if (looksLikeContinuation && !isSubheading(rawLine)) {
-    bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
-  } else {
-    bufferEntry = bufferEntry ? bufferEntry + " " + rawLine : rawLine;
-  }
-}
-
     logDebug(`(line ${i}) + [${currentSection}] "${rawLine}"`);
   }
 
