@@ -325,7 +325,7 @@ async function parsePDF(file) {
   }
 
   logDebug("✅ PDF text extracted. Parsing resume...");
-  resumeParser.parseResumeText(text);
+  resumeParser.parseResumeText(file);
 }
 
 async function parseDOCX(file) {
