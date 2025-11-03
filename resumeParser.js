@@ -60,11 +60,5 @@ async function parseResumeText(pdfFile) {
 }
 
 window.resumeParser = {
-  splitResumeSections,
-  extractBasicInfo,
-  extractEducation,
-  extractExperience,
-  extractProjects,
-  extractSkills,
   parseResumeText  // exposed here
 };
