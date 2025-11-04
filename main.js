@@ -48,13 +48,13 @@ const defaultResumeData = {
   {
     title: "TaskMaster Pro",
     description: "Productivity web app built with React and Node.js for task management",
-    technology: "React, Node.js, MongoDB",
+    technologies: "React, Node.js, MongoDB",
     dates: "Jan 2023 – Apr 2023"
   },
   {
     title: "DataViz Dashboard",
     description: "Visualization tool for business analytics using D3.js",
-    technology: "D3.js, Flask",
+    technologies: "D3.js, Flask",
     dates: "Sep 2022 – Dec 2022"
   }
   ],
@@ -180,7 +180,7 @@ function addProjectCard(data) {
   card.className = "card";
 
   const titleInput = createInput(data?.title, "Project Title", val => card.dataset.title = val);
-  const techInput = createInput(data?.technology, "Technology Used", val => card.dataset.technology = val);
+  const techInput = createInput(data?.technologies, "Technologies Used", val => card.dataset.technology = val);
   const datesInput = createInput(data?.dates, "Dates", val => card.dataset.dates = val);
   const descInput = createTextarea(data?.description, "Description", val => card.dataset.description = val);
 
@@ -229,7 +229,7 @@ function collectResumeData() {
 
   const projects = Array.from(document.getElementById("projects-cards")?.children || []).map(card => ({
   title: card.children[0].value,
-  technology: card.children[1].value,
+  technologies: card.children[1].value,
   dates: card.children[2].value,
   description: card.children[3].value
   }));
