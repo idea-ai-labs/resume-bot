@@ -45,14 +45,18 @@ const defaultResumeData = {
     }
   ],
   projects: [
-    {
-      title: "TaskMaster Pro",
-      description: "Productivity web app built with React and Node.js for task management"
-    },
-    {
-      title: "DataViz Dashboard",
-      description: "Visualization tool for business analytics using D3.js"
-    }
+  {
+    title: "TaskMaster Pro",
+    description: "Productivity web app built with React and Node.js for task management",
+    technology: "React, Node.js, MongoDB",
+    dates: "Jan 2023 – Apr 2023"
+  },
+  {
+    title: "DataViz Dashboard",
+    description: "Visualization tool for business analytics using D3.js",
+    technology: "D3.js, Flask",
+    dates: "Sep 2022 – Dec 2022"
+  }
   ],
   skills: [
     {
@@ -176,10 +180,11 @@ function addProjectCard(data) {
   card.className = "card";
 
   const titleInput = createInput(data?.title, "Project Title", val => card.dataset.title = val);
-  //const descInput = createInput(data?.description, "Description", val => card.dataset.description = val);
+  const techInput = createInput(data?.technology, "Technology Used", val => card.dataset.technology = val);
+  const datesInput = createInput(data?.dates, "Dates", val => card.dataset.dates = val);
   const descInput = createTextarea(data?.description, "Description", val => card.dataset.description = val);
 
-  card.append(titleInput, descInput);
+  card.append(titleInput, techInput, datesInput, descInput);
   card.appendChild(createRemoveButton(card));
   container.appendChild(card);
   adjustSectionHeight(container.closest(".section"));
@@ -223,8 +228,10 @@ function collectResumeData() {
   }));
 
   const projects = Array.from(document.getElementById("projects-cards")?.children || []).map(card => ({
-    title: card.children[0].value,
-    description: card.children[1].value
+  title: card.children[0].value,
+  technology: card.children[1].value,
+  dates: card.children[2].value,
+  description: card.children[3].value
   }));
 
   const skills = Array.from(document.getElementById("skills-cards")?.children || []).map(card => ({
