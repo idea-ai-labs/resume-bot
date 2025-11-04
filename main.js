@@ -377,6 +377,32 @@ function resetToDefault() {
   catch(e){ logDebug("⚠️ Failed to save default: "+e); }
 }
 
+function toggleAllSections() {
+  const sections = document.querySelectorAll(".section");
+  const button = document.getElementById("toggle-all-btn");
+  if (!button) return;
+
+  const expand = button.textContent === "Expand All"; // true if we want to expand
+
+  sections.forEach(section => {
+    const content = section.querySelector(".section-content");
+    const icon = section.querySelector(".toggle-icon");
+    if (!content || !icon) return;
+
+    if (expand) {
+      content.classList.remove("collapsed");
+      content.style.maxHeight = content.scrollHeight + "px";
+      icon.textContent = "−";
+    } else {
+      content.classList.add("collapsed");
+      content.style.maxHeight = "0";
+      icon.textContent = "+";
+    }
+  });
+
+  button.textContent = expand ? "Collapse All" : "Expand All";
+}
+
 // ------------------ Init ------------------
 window.onload = () => {
   const resumeData = loadFromLocalStorage() || defaultResumeData;
@@ -388,6 +414,7 @@ window.onload = () => {
   document.getElementById("add-skill-btn")?.addEventListener("click", () => addSkillCard({}));
 
   document.getElementById("generate-btn")?.addEventListener("click", generatePDF);
+  document.getElementById("toggle-all-btn")?.addEventListener("click", toggleAllSections);
   document.getElementById("reset-btn")?.addEventListener("click", () => { if(confirm("Reset resume to default?")) resetToDefault(); });
   document.getElementById("upload-resume")?.addEventListener("change", handleResumeUpload);
 
