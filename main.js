@@ -402,7 +402,6 @@ function toggleAllSections() {
 
   button.textContent = expand ? "Collapse All" : "Expand All";
 }
-
 function collapseAllSectionsOnLoad() {
   const sections = document.querySelectorAll(".section-content");
   const icons = document.querySelectorAll(".toggle-icon");
@@ -417,6 +416,19 @@ function collapseAllSectionsOnLoad() {
 
 // ------------------ Init ------------------
 window.onload = () => {
+  
+  // 🔹 File upload label handler
+  const uploadInput = document.getElementById("upload-resume");
+  const fileNameSpan = document.getElementById("file-name");
+
+  uploadInput.addEventListener("change", function() {
+    if (this.files && this.files.length > 0) {
+      fileNameSpan.textContent = `Uploaded: ${this.files[0].name}`;
+    } else {
+      fileNameSpan.textContent = "";
+    }
+  });
+
   const resumeData = loadFromLocalStorage() || defaultResumeData;
   renderResume(resumeData);
 
@@ -435,6 +447,7 @@ window.onload = () => {
     if(el) el.addEventListener("input", saveToLocalStorage);
   });
   collapseAllSectionsOnLoad();
+
   logDebug("✅ Resume Builder initialized. resumeParser ver 1");
 };
 
