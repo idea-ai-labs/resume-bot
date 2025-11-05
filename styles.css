@@ -104,6 +104,114 @@ header p {
   display: none;
 }
 
+/* ------------------ Card Styling ------------------ */
+.card {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card input,
+.card textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  font-size: 14px;
+}
+
+.card textarea {
+  resize: vertical;
+  min-height: 50px;
+}
+
+/* ------------------ Button Row ------------------ */
+.card-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.card-buttons button {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.card-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Default button colors */
+.remove-btn {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.remove-btn:hover:not(:disabled) {
+  background-color: #c0392b;
+}
+
+.move-up,
+.move-down {
+  background-color: #3498db;
+  color: #fff;
+}
+
+.move-up:hover:not(:disabled),
+.move-down:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+/* ------------------ Dark Mode ------------------ */
+body.dark-mode {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+body.dark-mode .card {
+  background-color: #2a2a2a;
+  border-color: #555;
+}
+
+body.dark-mode .card input,
+body.dark-mode .card textarea {
+  background-color: #3a3a3a;
+  border-color: #666;
+  color: #e0e0e0;
+}
+
+body.dark-mode .card-buttons button {
+  color: #fff;
+}
+
+body.dark-mode .remove-btn {
+  background-color: #e74c3c;
+}
+
+body.dark-mode .remove-btn:hover:not(:disabled) {
+  background-color: #c0392b;
+}
+
+body.dark-mode .move-up,
+body.dark-mode .move-down {
+  background-color: #3498db;
+}
+
+body.dark-mode .move-up:hover:not(:disabled),
+body.dark-mode .move-down:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
 /* =========================================
    Buttons
 ========================================= */
