@@ -273,20 +273,23 @@ function resetToDefault() {
 // ------------------ Theme Toggle ------------------
 function setupThemeToggle() {
   const btn = document.createElement("button");
-  btn.id = "theme-toggle";
+  btn.id = "dark-mode-btn";
   btn.textContent = "🌙 Dark Mode";
   btn.className = "theme-btn";
   document.querySelector("header").appendChild(btn);
+
+  // Apply saved theme from localStorage
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark-mode");
+    btn.textContent = "☀️ Light Mode";
+  }
+
   btn.addEventListener("click", () => {
-    document.body.classList.toggle("dark");
-    const isDark = document.body.classList.contains("dark");
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
     btn.textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
     localStorage.setItem("theme", isDark ? "dark" : "light");
   });
-  if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark");
-    btn.textContent = "☀️ Light Mode";
-  }
 }
 
 // ------------------ Init ------------------
