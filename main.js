@@ -84,6 +84,129 @@ function createRemoveButton(card) {
   return b;
 }
 
+// ------------------ Helper Buttons ------------------
+function createMoveButtons(card) {
+  const container = document.createElement("div");
+  container.className = "move-btns";
+
+  const upBtn = document.createElement("button");
+  upBtn.type = "button";
+  upBtn.className = "move-up";
+  upBtn.textContent = "↑";
+  upBtn.onclick = () => moveCardUp(card);
+
+  const downBtn = document.createElement("button");
+  downBtn.type = "button";
+  downBtn.className = "move-down";
+  downBtn.textContent = "↓";
+  downBtn.onclick = () => moveCardDown(card);
+
+  container.append(upBtn, downBtn, createRemoveButton(card));
+  return container;
+}
+
+function moveCardUp(card) {
+  const prev = card.previousElementSibling;
+  if (prev && prev.classList.contains("card")) {
+    card.parentNode.insertBefore(card, prev);
+    updateMoveButtons(card.parentNode);
+    saveToLocalStorage();
+  }
+}
+
+function moveCardDown(card) {
+  const next = card.nextElementSibling;
+  if (next && next.classList.contains("card")) {
+    card.parentNode.insertBefore(next, card);
+    updateMoveButtons(card.parentNode);
+    saveToLocalStorage();
+  }
+}
+
+function updateMoveButtons(container) {
+  const cards = Array.from(container.querySelectorAll(".card"));
+  cards.forEach((card, index) => {
+    const upBtn = card.querySelector(".move-up");
+    const downBtn = card.querySelector(".move-down");
+    if (upBtn && downBtn) {
+      upBtn.disabled = index === 0;
+      downBtn.disabled = index === cards.length - 1;
+    }
+  });
+}
+
+// ------------------ Updated Add Card Functions ------------------
+function addEducationCard(d) {
+  const container = document.getElementById("education-cards");
+  if (!container) return;
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.append(
+    createInput(d?.school, "School Name", v => card.dataset.school = v),
+    createInput(d?.location, "Location", v => card.dataset.location = v),
+    createInput(d?.degree, "Degree", v => card.dataset.degree = v),
+    createInput(d?.dates, "Dates", v => card.dataset.dates = v),
+    createMoveButtons(card)
+  );
+
+  container.appendChild(card);
+  updateMoveButtons(container);
+}
+
+function addExperienceCard(d) {
+  const container = document.getElementById("experience-cards");
+  if (!container) return;
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.append(
+    createInput(d?.title, "Job Title", v => card.dataset.title = v),
+    createInput(d?.company, "Company", v => card.dataset.company = v),
+    createInput(d?.location, "Location", v => card.dataset.location = v),
+    createInput(d?.dates, "Dates", v => card.dataset.dates = v),
+    createTextarea((d?.details || []).join("\n"), "Details (one per line)", v => card.dataset.details = v.split("\n")),
+    createMoveButtons(card)
+  );
+
+  container.appendChild(card);
+  updateMoveButtons(container);
+}
+
+function addProjectCard(d) {
+  const container = document.getElementById("projects-cards");
+  if (!container) return;
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.append(
+    createInput(d?.title, "Project Title", v => card.dataset.title = v),
+    createInput(d?.technologies, "Technologies Used", v => card.dataset.technologies = v),
+    createInput(d?.dates, "Dates", v => card.dataset.dates = v),
+    createTextarea(d?.description, "Description", v => card.dataset.description = v),
+    createMoveButtons(card)
+  );
+
+  container.appendChild(card);
+  updateMoveButtons(container);
+}
+
+function addSkillCard(d) {
+  const container = document.getElementById("skills-cards");
+  if (!container) return;
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.append(
+    createInput(d?.category, "Category", v => card.dataset.category = v),
+    createInput((d?.items || []).join(", "), "Comma-separated skills", v => card.dataset.items = v.split(",").map(s => s.trim())),
+    createMoveButtons(card)
+  );
+
+  container.appendChild(card);
+  updateMoveButtons(container);
+}
+/*
 // ------------------ Card Builders ------------------
 function addEducationCard(d) {
   const c = document.createElement("div");
@@ -132,7 +255,7 @@ function addSkillCard(d) {
   );
   document.getElementById("skills-cards").appendChild(c);
 }
-
+*/
 // ------------------ Collect Data ------------------
 function collectResumeData() {
   const name = document.getElementById("name").value;
