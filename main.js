@@ -415,40 +415,74 @@ function collapseAllSectionsOnLoad() {
 }
 
 // ------------------ Init ------------------
+
 window.onload = () => {
-  
-  // 🔹 File upload label handler
+  logDebug("🚀 Initializing NextGen Resume Lab...");
+
+  // 🔹 Unified Resume Upload Handler
   const uploadInput = document.getElementById("upload-resume");
   const fileNameSpan = document.getElementById("file-name");
 
-  uploadInput.addEventListener("change", function() {
-    if (this.files && this.files.length > 0) {
-      fileNameSpan.textContent = `Uploaded: ${this.files[0].name}`;
-    } else {
+  uploadInput.addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) {
       fileNameSpan.textContent = "";
+      return;
+    }
+
+    fileNameSpan.textContent = `📄 ${file.name}`;
+    logDebug(`📂 Uploading file: ${file.name}`);
+
+    const ext = file.name.split(".").pop().toLowerCase();
+    try {
+      if (ext === "pdf") {
+        await parsePDF(file);
+      } else if (ext === "docx" || ext === "doc") {
+        await parseDOCX(file);
+      } else {
+        logDebug("❌ Unsupported file format. Please upload a PDF or DOCX file.");
+        return;
+      }
+
+      // ✅ Auto-expand all sections after successful parsing
+      setTimeout(() => {
+        expandAllSections();
+        const toggleBtn = document.getElementById("toggle-all-btn");
+        if (toggleBtn) toggleBtn.textContent = "Collapse All";
+        logDebug("📖 Resume parsed — all sections expanded.");
+      }, 300);
+    } catch (err) {
+      logDebug(`❌ Error parsing file: ${err.message}`);
     }
   });
 
+  // 🔹 Load from localStorage or use default
   const resumeData = loadFromLocalStorage() || defaultResumeData;
   renderResume(resumeData);
 
+  // 🔹 Section Add Button Listeners
   document.getElementById("add-education-btn")?.addEventListener("click", () => addEducationCard({}));
   document.getElementById("add-experience-btn")?.addEventListener("click", () => addExperienceCard({}));
   document.getElementById("add-project-btn")?.addEventListener("click", () => addProjectCard({}));
   document.getElementById("add-skill-btn")?.addEventListener("click", () => addSkillCard({}));
 
+  // 🔹 Action Buttons
   document.getElementById("generate-btn")?.addEventListener("click", generatePDF);
   document.getElementById("toggle-all-btn")?.addEventListener("click", toggleAllSections);
-  document.getElementById("reset-btn")?.addEventListener("click", () => { if(confirm("Reset resume to default?")) resetToDefault(); });
-  document.getElementById("upload-resume")?.addEventListener("change", handleResumeUpload);
-
-  ["name","email","phone","website"].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.addEventListener("input", saveToLocalStorage);
+  document.getElementById("reset-btn")?.addEventListener("click", () => {
+    if (confirm("Reset resume to default?")) resetToDefault();
   });
+
+  // 🔹 Auto-save for basic info fields
+  ["name", "email", "phone", "website"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", saveToLocalStorage);
+  });
+
+  // 🔹 Collapse all sections on initial page load
   collapseAllSectionsOnLoad();
 
-  logDebug("✅ Resume Builder initialized. resumeParser ver 1");
+  logDebug("✅ Resume Builder initialized successfully.");
 };
 
 // Expose functions
