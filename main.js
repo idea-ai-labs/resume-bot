@@ -403,6 +403,18 @@ function toggleAllSections() {
   button.textContent = expand ? "Collapse All" : "Expand All";
 }
 
+function collapseAllSectionsOnLoad() {
+  const sections = document.querySelectorAll(".section-content");
+  const icons = document.querySelectorAll(".toggle-icon");
+
+  sections.forEach(sec => sec.classList.add("collapsed"));
+  icons.forEach(icon => icon.textContent = "+");
+
+  // Update the main toggle button label if it exists
+  const toggleAllBtn = document.getElementById("toggle-all-btn");
+  if (toggleAllBtn) toggleAllBtn.textContent = "Expand All";
+}
+
 // ------------------ Init ------------------
 window.onload = () => {
   const resumeData = loadFromLocalStorage() || defaultResumeData;
@@ -422,7 +434,7 @@ window.onload = () => {
     const el = document.getElementById(id);
     if(el) el.addEventListener("input", saveToLocalStorage);
   });
-
+  collapseAllSectionsOnLoad();
   logDebug("✅ Resume Builder initialized. resumeParser ver 1");
 };
 
