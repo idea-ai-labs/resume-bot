@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NextGen Resume Lab</title>
+
+  <meta name="description" content="NextGen Resume Lab — AI-assisted resume builder. Upload, parse, customize and export clean PDF resumes." />
+  <meta property="og:title" content="NextGen Resume Lab" />
+  <meta property="og:description" content="AI-assisted resume builder — upload, parse, customize and export PDF resumes." />
+  <meta property="og:type" content="website" />
+
+  <!--link rel="icon" href="favicon.ico" /-->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -88,8 +96,8 @@
     </section>
   </div>
 
-  <script src="main.js?v=<%= Date.now() %>"></script>
-  <script src="resumeParser.js?v=<%= Date.now() %>"></script>
+  <script src="main.js"></script>
+  <script src="resumeParser.js"></script>
   <!-- PDF Parser -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <!-- DOCX Parser -->
