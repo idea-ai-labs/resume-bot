@@ -19,6 +19,76 @@ a {
   margin: 0 auto;
 }
 
+/* --- Hero Section (Top Banner) --- */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  padding: 4rem 2rem;
+  flex-wrap: wrap;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.hero-text {
+  flex: 1 1 420px;
+}
+
+.hero-text h1 {
+  font-size: 2.6rem;
+  margin-bottom: 1rem;
+  color: #1a1a1a;
+}
+
+.hero-text p {
+  font-size: 1.15rem;
+  color: #444;
+  margin-bottom: 1.8rem;
+  line-height: 1.6;
+}
+
+.hero-text .cta-btn {
+  font-size: 1.1rem;
+  padding: 0.8rem 1.6rem;
+}
+
+.hero-image {
+  flex: 1 1 380px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-image img {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-image img:hover {
+  transform: scale(1.04);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 900px) {
+  .hero {
+    flex-direction: column-reverse;
+    text-align: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .hero-text h1 {
+    font-size: 2.1rem;
+  }
+
+  .hero-image img {
+    max-width: 90%;
+  }
+}
 /* ------------------------ Header ------------------------ */
 header {
   text-align: center;
