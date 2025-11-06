@@ -3,18 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NextGen Resume Lab</title>
-  <meta name="description" content="Create professional, one-page resumes in minutes. Clean formatting, ready to export. Perfect for college grads and busy professionals.">
+  <title>NextGen Resume Lab – Build One-Page Resumes Instantly</title>
+  <meta name="description" content="Create professional, mobile-friendly resumes in minutes. Perfect for college grads and busy professionals.">
+  
+  <!-- Open Graph for social sharing -->
+  <meta property="og:title" content="NextGen Resume Lab – Build One-Page Resumes Instantly">
+  <meta property="og:description" content="Create professional, mobile-friendly resumes in minutes. Perfect for college grads and busy professionals.">
+  <meta property="og:image" content="https://resume-bot-one.vercel.app/sample-resume.png">
+  <meta property="og:url" content="https://resume-bot-one.vercel.app">
+  <meta name="twitter:card" content="summary_large_image">
+  
   <link rel="stylesheet" href="marketing.css" />
 </head>
 <body>
-  <header>
-    <div class="container">
+  <!--header>
+    <div class="container header-container">
       <h1>🚀 NextGen Resume Lab</h1>
       <p>Build clean, professional resumes on-the-go. One-page, export-ready, and hassle-free.</p>
       <a href="/app" class="cta-btn">Start Building Your Resume</a>
+      
+      <!-- Sample Resume Preview -->
+      <!--div class="sample-resume">
+        <img src="/sample-resume.png" alt="Sample Resume Preview" />
+      </div>
     </div>
-  </header>
+</header-->
+
+<header>
+  <div class="container header-container">
+    <h1>🚀 NextGen Resume Lab</h1>
+    <p>Build clean, professional resumes on-the-go. One-page, export-ready, and hassle-free.</p>
+
+    <div class="cta-buttons">
+      <a href="/app" class="cta-btn">Start Building Your Resume</a>
+      <button id="preview-btn" class="preview-btn">👁️ View Sample Resume</button>
+    </div>
+  </div>
+</header>
+
+<!-- Popup Modal -->
+<div id="preview-modal" class="preview-modal">
+  <div class="modal-content">
+    <span id="close-modal" class="close-btn">&times;</span>
+    <img src="/sample-resume.png" alt="Sample Resume Preview" />
+  </div>
+</div>
 
   <section class="features">
     <div class="container">
@@ -47,6 +80,10 @@
         "NextGen Resume Lab made building my first resume fast and stress-free. Loved the clean look!"
       </blockquote>
       <cite>— Jane D., College Grad</cite>
+      <blockquote>
+        "Saved me hours of formatting headaches. Highly recommend!"
+      </blockquote>
+      <cite>— Mark T., Job Seeker</cite>
     </div>
   </section>
 
@@ -58,9 +95,22 @@
   </section>
 
   <footer>
-    <div class="container">
+    <div class="container footer-container">
       <p>&copy; 2025 NextGen Resume Lab. All rights reserved.</p>
+      <p><a href="/privacy.html">Privacy Policy</a> | <a href="/terms.html">Terms of Service</a></p>
     </div>
   </footer>
+
+  <script>
+  const previewBtn = document.getElementById('preview-btn');
+  const modal = document.getElementById('preview-modal');
+  const closeModal = document.getElementById('close-modal');
+
+  previewBtn.addEventListener('click', () => modal.style.display = 'block');
+  closeModal.addEventListener('click', () => modal.style.display = 'none');
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+</script>
 </body>
 </html>

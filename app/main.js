@@ -1,35 +1,109 @@
 // ------------------ Default Resume Data ------------------
+
 const defaultResumeData = {
-  name: "John Smith",
-  contact: {
-    email: "john.smith@example.com",
-    phone: "555-123-4567",
-    website: "https://linkedin.com/in/johnsmith"
+  "name": "John Smith",
+  "contact": {
+    "email": "john.smith@example.com",
+    "phone": "555-123-4567",
+    "website": "https://linkedin.com/in/johnsmith"
   },
-  education: [
-    { school: "University of Modern Tech", location: "San Francisco, CA", degree: "B.Sc. in Information Systems", dates: "Sep. 2015 -- May 2019" },
-    { school: "City College", location: "San Francisco, CA", degree: "Associate's in Computer Science", dates: "Sep. 2013 -- May 2015" }
-  ],
-  experience: [
+  "education": [
     {
-      title: "Software Engineer",
-      company: "Innovatech Solutions",
-      location: "San Francisco, CA",
-      dates: "June 2019 -- Present",
-      details: [
-        "Developed scalable web applications using React and Node.js",
-        "Implemented REST APIs and integrated third-party services",
-        "Mentored junior developers and conducted code reviews"
+      "school": "University of Modern Tech",
+      "location": "San Francisco, CA",
+      "degree": "B.Sc. in Information Systems",
+      "dates": "Sep 2015 – May 2019"
+    },
+    {
+      "school": "City College",
+      "location": "San Francisco, CA",
+      "degree": "Associate’s in Computer Science",
+      "dates": "Sep 2013 – May 2015"
+    }
+  ],
+  "experience": [
+    {
+      "title": "Senior Software Engineer",
+      "company": "Innovatech Solutions",
+      "location": "San Francisco, CA",
+      "dates": "June 2021 – Present",
+      "details": [
+        "Architected and developed 8+ scalable full-stack web applications using React, Node.js, and PostgreSQL, serving 50,000+ active users with 99.9% uptime",
+        "Designed and implemented RESTful APIs handling 2 million+ requests daily, reducing average response time by 40% through query optimization and caching strategies",
+        "Led migration of monolithic application to microservices architecture using Docker and Kubernetes, reducing deployment time from 2 hours to 15 minutes",
+        "Mentored 5 junior developers through pair programming sessions and code reviews, resulting in 3 promotions within 18 months"
+      ]
+    },
+    {
+      "title": "Software Engineer",
+      "company": "TechBridge Inc.",
+      "location": "San Jose, CA",
+      "dates": "March 2020 – May 2021",
+      "details": [
+        "Developed and maintained e-commerce platform features using React and Django, increasing user engagement by 35% and generating $2M in additional revenue",
+        "Implemented automated testing suite with Jest and Pytest achieving 80% code coverage, reducing production bugs by 45%",
+        "Collaborated with product and design teams to deliver 6 major feature releases in Agile sprints, consistently meeting project deadlines"
+      ]
+    },
+    {
+      "title": "Junior Software Developer",
+      "company": "StartUp Labs",
+      "location": "San Francisco, CA",
+      "dates": "June 2019 – February 2020",
+      "details": [
+        "Built responsive web interfaces using React and Bootstrap for 5 client projects, improving mobile user experience and accessibility scores",
+        "Integrated third-party APIs including Stripe, Twilio, and SendGrid, expanding platform functionality and reducing development time by 30%",
+        "Participated in daily standups and code reviews, contributing to team knowledge sharing and maintaining high code quality standards"
       ]
     }
   ],
-  projects: [
-    { title: "TaskMaster Pro", description: "Productivity app built with React and Node.js", technologies: "React, Node.js, MongoDB", dates: "Jan 2023 – Apr 2023" },
-    { title: "DataViz Dashboard", description: "Visualization tool using D3.js", technologies: "D3.js, Flask", dates: "Sep 2022 – Dec 2022" }
+  "projects": [
+    {
+      "title": "TaskMaster Pro",
+      "description": "Built comprehensive productivity and project management web application with real-time collaboration features for teams up to 50 members. Implemented user authentication system using JWT tokens and role-based access control for admin, manager, and member roles. Developed drag-and-drop Kanban board interface with React Beautiful DnD, enabling instant task synchronization across multiple devices using WebSockets.",
+      "technologies": "React, Node.js, Express, MongoDB, Redux, JWT, AWS S3",
+      "dates": "Jan 2023 – Apr 2023"
+    },
+    {
+      "title": "DataViz Dashboard",
+      "description": "Developed interactive data visualization platform with 10+ customizable chart types for analyzing complex datasets up to 100,000 data points. Built Flask REST API backend with PostgreSQL database, reducing data load times by 70% through Pandas optimization. Created dynamic D3.js visualizations including heat maps and geographic maps with zoom, pan, and filtering capabilities.",
+      "technologies": "D3.js, Flask, Python, PostgreSQL, Pandas, Chart.js",
+      "dates": "Sep 2022 – Dec 2022"
+    },
+    {
+      "title": "E-Commerce Platform",
+      "description": "Developed full-featured e-commerce platform with product catalog, shopping cart, and secure checkout process integrated with Stripe payment gateway. Implemented product search system with Elasticsearch supporting fuzzy matching, autocomplete suggestions, and real-time filtering. Built admin dashboard for inventory management and order tracking with real-time analytics, achieving 4-second average page load time.",
+      "technologies": "React, Redux, Node.js, Express, MongoDB, Stripe API",
+      "dates": "May 2022 – Aug 2022"
+    },
+    {
+      "title": "Weather Forecast Application",
+      "description": "Created cross-platform mobile weather application for iOS and Android with location-based forecasts, 7-day predictions, and severe weather alerts. Integrated OpenWeather API and geolocation services for automatic location detection with support for multiple saved locations. Designed intuitive UI with animated weather icons and hourly forecast timelines, implementing AsyncStorage for offline data persistence.",
+      "technologies": "React Native, OpenWeather API, AsyncStorage, Expo",
+      "dates": "Jan 2022 – Mar 2022"
+    }
   ],
-  skills: [
-    { category: "Languages", items: ["Python", "JavaScript", "SQL", "HTML/CSS"] },
-    { category: "Frameworks", items: ["React", "Node.js", "Express", "D3.js"] }
+  "skills": [
+    {
+      "category": "Languages",
+      "items": ["Python", "JavaScript", "TypeScript", "SQL", "HTML5", "CSS3", "Java", "C++"]
+    },
+    {
+      "category": "Frameworks & Libraries",
+      "items": ["React", "Node.js", "Express", "Redux", "Vue.js", "D3.js", "Flask", "Django", "React Native", "Bootstrap", "Tailwind CSS"]
+    },
+    {
+      "category": "Databases & Tools",
+      "items": ["MongoDB", "PostgreSQL", "MySQL", "Redis", "Git", "Docker", "Kubernetes", "AWS (EC2, S3, Lambda)", "Jenkins", "Postman"]
+    },
+    {
+      "category": "Development Practices",
+      "items": ["Agile/Scrum", "CI/CD", "Test-Driven Development (TDD)", "RESTful API Design", "Microservices Architecture", "Code Review"]
+    },
+    {
+      "category": "Soft Skills",
+      "items": ["Technical Leadership", "Mentorship", "Cross-functional Collaboration", "Problem Solving", "Project Management", "Technical Documentation"]
+    }
   ]
 };
 
@@ -135,6 +209,14 @@ function updateMoveButtons(container) {
   });
 }
 
+function adjustSectionHeight(section) {
+  if (!section) return;
+  const content = section.querySelector(".section-content");
+  if (content && !content.classList.contains("collapsed")) {
+    content.style.maxHeight = content.scrollHeight + "px";
+  }
+}
+
 // ------------------ Updated Add Card Functions ------------------
 function addEducationCard(d) {
   const container = document.getElementById("education-cards");
@@ -152,6 +234,7 @@ function addEducationCard(d) {
 
   container.appendChild(card);
   updateMoveButtons(container);
+  adjustSectionHeight(container.closest(".section"));
 }
 
 function addExperienceCard(d) {
@@ -171,6 +254,7 @@ function addExperienceCard(d) {
 
   container.appendChild(card);
   updateMoveButtons(container);
+  adjustSectionHeight(container.closest(".section"));
 }
 
 function addProjectCard(d) {
@@ -189,6 +273,7 @@ function addProjectCard(d) {
 
   container.appendChild(card);
   updateMoveButtons(container);
+  adjustSectionHeight(container.closest(".section"));
 }
 
 function addSkillCard(d) {
@@ -205,57 +290,9 @@ function addSkillCard(d) {
 
   container.appendChild(card);
   updateMoveButtons(container);
+  adjustSectionHeight(container.closest(".section"));
 }
-/*
-// ------------------ Card Builders ------------------
-function addEducationCard(d) {
-  const c = document.createElement("div");
-  c.className = "card";
-  c.append(
-    createInput(d?.school, "School Name", v => c.dataset.school = v),
-    createInput(d?.location, "Location", v => c.dataset.location = v),
-    createInput(d?.degree, "Degree", v => c.dataset.degree = v),
-    createInput(d?.dates, "Dates", v => c.dataset.dates = v),
-    createRemoveButton(c)
-  );
-  document.getElementById("education-cards").appendChild(c);
-}
-function addExperienceCard(d) {
-  const c = document.createElement("div");
-  c.className = "card";
-  c.append(
-    createInput(d?.title, "Job Title", v => c.dataset.title = v),
-    createInput(d?.company, "Company", v => c.dataset.company = v),
-    createInput(d?.location, "Location", v => c.dataset.location = v),
-    createInput(d?.dates, "Dates", v => c.dataset.dates = v),
-    createTextarea((d?.details || []).join("\n"), "Details (one per line)", v => c.dataset.details = v.split("\n")),
-    createRemoveButton(c)
-  );
-  document.getElementById("experience-cards").appendChild(c);
-}
-function addProjectCard(d) {
-  const c = document.createElement("div");
-  c.className = "card";
-  c.append(
-    createInput(d?.title, "Project Title", v => c.dataset.title = v),
-    createInput(d?.technologies, "Technologies Used", v => c.dataset.technologies = v),
-    createInput(d?.dates, "Dates", v => c.dataset.dates = v),
-    createTextarea(d?.description, "Description", v => c.dataset.description = v),
-    createRemoveButton(c)
-  );
-  document.getElementById("projects-cards").appendChild(c);
-}
-function addSkillCard(d) {
-  const c = document.createElement("div");
-  c.className = "card";
-  c.append(
-    createInput(d?.category, "Category", v => c.dataset.category = v),
-    createInput((d?.items || []).join(", "), "Comma-separated skills", v => c.dataset.items = v.split(",").map(s => s.trim())),
-    createRemoveButton(c)
-  );
-  document.getElementById("skills-cards").appendChild(c);
-}
-*/
+
 // ------------------ Collect Data ------------------
 function collectResumeData() {
   const name = document.getElementById("name").value;
