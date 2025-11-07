@@ -206,8 +206,7 @@ body.dark-mode .card textarea {
   transition: all 0.2s ease-in-out;
   border: none;
   text-decoration: none;
-  flex: 1 1 120px; /* consistent sizing */
-  text-align: center;
+  line-height: 1.2; /* ensures text is vertically centered */
 }
 
 /* Upload Resume Label */
@@ -220,7 +219,7 @@ body.dark-mode .card textarea {
   background-color: #005baa;
 }
 
-/* Add Buttons */
+/* Add Button */
 .actions .add-btn {
   background-color: #0078d7;
   color: white;
