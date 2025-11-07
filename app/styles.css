@@ -132,7 +132,6 @@ header p {
   max-height: 200px;
 }
 
-/* --- Dark Mode for Cards --- */
 body.dark-mode .card input,
 body.dark-mode .card textarea {
   background-color: #333;
@@ -161,7 +160,6 @@ body.dark-mode .card textarea {
   cursor: not-allowed;
 }
 
-/* Default card button colors */
 .remove-btn {
   background-color: #e74c3c;
   color: #fff;
@@ -183,7 +181,7 @@ body.dark-mode .card textarea {
 }
 
 /* =========================================
-   Actions / Button Row
+   Actions / Buttons Row
 ========================================= */
 .actions {
   display: flex;
@@ -206,7 +204,9 @@ body.dark-mode .card textarea {
   transition: all 0.2s ease-in-out;
   border: none;
   text-decoration: none;
-  line-height: 1.2; /* ensures text is vertically centered */
+  line-height: 1.2;
+  width: auto;
+  flex: 0 0 auto;
 }
 
 /* Upload Resume Label */
@@ -219,7 +219,7 @@ body.dark-mode .card textarea {
   background-color: #005baa;
 }
 
-/* Add Button */
+/* Add Buttons */
 .actions .add-btn {
   background-color: #0078d7;
   color: white;
@@ -273,9 +273,9 @@ body.dark-mode .autosave-text {
   color: #ccc;
 }
 
-/* =========================
+/* =========================================
    Global Buttons
-========================= */
+========================================= */
 button {
   border: none;
   cursor: pointer;
@@ -288,17 +288,104 @@ button {
   margin: 4px;
 }
 
-body.dark-mode .actions button,
-body.dark-mode .actions .upload-label {
-  filter: brightness(1.2);
-  color: #fff;
+.add-btn {
+  background-color: #0078d7;
+  color: white;
+}
+
+.add-btn:hover {
+  background-color: #005baa;
+}
+
+.remove-btn {
+  background-color: #ff6464;
+  color: white;
+}
+
+.remove-btn:hover {
+  background-color: #e43f3f;
+}
+
+.generate-btn {
+  background-color: #28a745;
+  color: white;
+  font-weight: 600;
+}
+
+.generate-btn:hover {
+  background-color: #218838;
+}
+
+.reset-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.reset-btn:hover {
+  background-color: #555;
+}
+
+/* =========================================
+   File Name Display
+========================================= */
+.file-name {
+  font-size: 0.9rem;
+  color: #555;
+  margin-left: 8px;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* =========================================
+   Theme Toggle
+========================================= */
+#theme-toggle {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  background: #0078d7;
+  color: white;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  z-index: 999;
+}
+
+#theme-toggle:hover {
+  background: #005baa;
+}
+
+/* =========================================
+   Debug Log
+========================================= */
+.debug {
+  margin: 1rem;
+}
+
+#log-box {
+  width: 100%;
+  height: 200px;
+  font-family: monospace;
+  font-size: 12px;
+  background: #1e1e1e;
+  color: #dcdcdc;
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+  overflow-y: auto;
+}
+
+.dark-mode #log-box {
+  background: #0f0f0f;
 }
 
 /* =========================================
    Dark Mode
 ========================================= */
 body.dark-mode {
-  background-color: #1e1e1e;
+  background-color: #121212;
   color: #e0e0e0;
 }
 
@@ -334,51 +421,22 @@ body.dark-mode .card textarea {
   border: 1px solid #555;
 }
 
-body.dark-mode .card-buttons button {
-  color: #fff;
+body.dark-mode .add-btn,
+body.dark-mode .remove-btn,
+body.dark-mode .generate-btn,
+body.dark-mode .reset-btn {
+  filter: brightness(1.2);
 }
 
-body.dark-mode .remove-btn {
-  background-color: #e74c3c;
-}
-
-body.dark-mode .remove-btn:hover:not(:disabled) {
-  background-color: #c0392b;
-}
-
-body.dark-mode .move-up,
-body.dark-mode .move-down {
-  background-color: #3498db;
-}
-
-body.dark-mode .move-up:hover:not(:disabled),
-body.dark-mode .move-down:hover:not(:disabled) {
-  background-color: #2980b9;
-}
-
-/* =========================================
-   Debug Log
-========================================= */
-.debug {
-  margin: 1rem;
-}
-
-#log-box {
-  width: 100%;
-  height: 200px;
-  font-family: monospace;
-  font-size: 12px;
-  background: #1e1e1e;
-  color: #dcdcdc;
-  border-radius: 6px;
-  padding: 8px;
-  resize: vertical;
-  overflow-y: auto;
-}
-
-.dark-mode #log-box {
-  background: #0f0f0f;
+body.dark-mode .debug {
+  background: #1a1a1a;
   color: #cfcfcf;
+}
+
+body.dark-mode #log-box {
+  background: #0d0d0d;
+  color: #cfcfcf;
+  border: 1px solid #444;
 }
 
 /* =========================================
@@ -395,9 +453,5 @@ body.dark-mode .move-down:hover:not(:disabled) {
   .section {
     margin: 0.5rem;
     padding: 0.8rem;
-  }
-  .actions button,
-  .actions .upload-label {
-    flex: 1 1 100%;
   }
 }
