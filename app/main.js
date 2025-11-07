@@ -44,17 +44,6 @@ const defaultResumeData = {
         "Implemented automated testing suite with Jest and Pytest achieving 80% code coverage, reducing production bugs by 45%",
         "Collaborated with product and design teams to deliver 6 major feature releases in Agile sprints, consistently meeting project deadlines"
       ]
-    },
-    {
-      "title": "Junior Software Developer",
-      "company": "StartUp Labs",
-      "location": "San Francisco, CA",
-      "dates": "June 2019 – February 2020",
-      "details": [
-        "Built responsive web interfaces using React and Bootstrap for 5 client projects, improving mobile user experience and accessibility scores",
-        "Integrated third-party APIs including Stripe, Twilio, and SendGrid, expanding platform functionality and reducing development time by 30%",
-        "Participated in daily standups and code reviews, contributing to team knowledge sharing and maintaining high code quality standards"
-      ]
     }
   ],
   "projects": [
@@ -75,12 +64,6 @@ const defaultResumeData = {
       "description": "Developed full-featured e-commerce platform with product catalog, shopping cart, and secure checkout process integrated with Stripe payment gateway. Implemented product search system with Elasticsearch supporting fuzzy matching, autocomplete suggestions, and real-time filtering. Built admin dashboard for inventory management and order tracking with real-time analytics, achieving 4-second average page load time.",
       "technologies": "React, Redux, Node.js, Express, MongoDB, Stripe API",
       "dates": "May 2022 – Aug 2022"
-    },
-    {
-      "title": "Weather Forecast Application",
-      "description": "Created cross-platform mobile weather application for iOS and Android with location-based forecasts, 7-day predictions, and severe weather alerts. Integrated OpenWeather API and geolocation services for automatic location detection with support for multiple saved locations. Designed intuitive UI with animated weather icons and hourly forecast timelines, implementing AsyncStorage for offline data persistence.",
-      "technologies": "React Native, OpenWeather API, AsyncStorage, Expo",
-      "dates": "Jan 2022 – Mar 2022"
     }
   ],
   "skills": [
@@ -99,10 +82,6 @@ const defaultResumeData = {
     {
       "category": "Development Practices",
       "items": ["Agile/Scrum", "CI/CD", "Test-Driven Development (TDD)", "RESTful API Design", "Microservices Architecture", "Code Review"]
-    },
-    {
-      "category": "Soft Skills",
-      "items": ["Technical Leadership", "Mentorship", "Cross-functional Collaboration", "Problem Solving", "Project Management", "Technical Documentation"]
     }
   ]
 };
