@@ -265,15 +265,6 @@ button {
   background-color: #218838;
 }
 
-.upload-label {
-  background-color: #28a745;
-  color: white;
-  font-weight: 600;
-}
-
-.upload-label:hover {
-  background-color: #218838;
-}
 .reset-btn {
   background-color: #6c757d;
   color: white;
@@ -283,18 +274,24 @@ button {
   background-color: #555;
 }
 
-.upload-label-old {
-  background-color: #0078d7;
+.upload-label {
+  background-color: #6c757d; /* change to match other buttons */
   color: white;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 0.9rem;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  margin: 4px;
+  text-decoration: none;
+  transition: background 0.2s ease-in-out;
 }
 
-.upload-label-old:hover {
-  background-color: #005baa;
+.upload-label:hover {
+  background-color: #555; /* darker shade for hover, matching Reset button */
 }
 
 /* =========================================
