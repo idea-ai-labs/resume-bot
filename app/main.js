@@ -351,6 +351,17 @@ function collapseAllSectionsOnLoad() {
   document.querySelectorAll(".toggle-icon").forEach(i => i.textContent = "+");
   document.getElementById("toggle-all-btn").textContent = "Expand All";
 }
+
+function expandAllSections() {
+  document.querySelectorAll(".section-content").forEach(content => {
+    content.classList.remove("collapsed");
+    content.style.maxHeight = content.scrollHeight + "px";
+  });
+  document.querySelectorAll(".toggle-icon").forEach(icon => icon.textContent = "−");
+  const btn = document.getElementById("toggle-all-btn");
+  if (btn) btn.textContent = "Collapse All";
+}
+
 function toggleAllSections() {
   const btn = document.getElementById("toggle-all-btn");
   const expand = btn.textContent === "Expand All";
@@ -411,11 +422,13 @@ async function parsePDF(file) {
     text += content.items.map(it => it.str).join(" ") + "\n";
   }
   resumeParser.parseResumeText(text);
+  expandAllSections();
 }
 async function parseDOCX(file) {
   const buf = await file.arrayBuffer();
   const result = await window.mammoth.extractRawText({ arrayBuffer: buf });
   resumeParser.parseResumeText(result.value);
+  expandAllSections();
 }
 
 // ------------------ Render / Reset ------------------
@@ -437,6 +450,7 @@ function resetToDefault() {
   localStorage.removeItem("resumeData");
   renderResume(defaultResumeData);
   saveToLocalStorage();
+  expandAllSections();
 }
 
 // ------------------ Theme Toggle ------------------
