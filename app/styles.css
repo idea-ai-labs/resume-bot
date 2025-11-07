@@ -182,7 +182,9 @@ body.dark-mode .card textarea {
   background-color: #2980b9;
 }
 
-/* Unified action buttons */
+/* =========================
+   Actions / Button Row
+========================= */
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -191,20 +193,76 @@ body.dark-mode .card textarea {
   margin: 12px 0;
 }
 
-.actions .action-btn,
+.actions button,
 .actions .upload-label {
-  padding: 8px 16px;
-  font-size: 0.95rem;
-  min-width: 120px;
-  text-align: center;
+  font-size: 0.9rem;
+  padding: 8px 12px;
   border-radius: 5px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  text-decoration: none;
 }
 
-.actions .action-btn:hover,
+/* Upload Resume Label */
+.actions .upload-label {
+  background-color: #0078d7;
+  color: white;
+}
+
 .actions .upload-label:hover {
-  transform: scale(1.05);
+  background-color: #005baa;
+}
+
+/* Add Buttons */
+.actions .add-btn {
+  background-color: #0078d7;
+  color: white;
+}
+
+.actions .add-btn:hover {
+  background-color: #005baa;
+}
+
+/* Generate Button */
+.actions .generate-btn {
+  background-color: #28a745;
+  color: white;
+  font-weight: 600;
+}
+
+.actions .generate-btn:hover {
+  background-color: #218838;
+}
+
+/* Reset Button */
+.actions .reset-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.actions .reset-btn:hover {
+  background-color: #555;
+}
+
+/* File name text next to upload */
+.actions .file-name {
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode .actions button,
+body.dark-mode .actions .upload-label {
+  filter: brightness(1.2);
+  color: #fff;
 }
 
 /* Autosave text styling */
@@ -313,25 +371,6 @@ button {
   background-color: #555;
 }
 
-/* Align upload label with other action buttons */
-.upload-label {
-  background-color: #0078d7;
-  color: white;
-  padding: 8px 16px;       /* match other buttons */
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;       /* same as buttons */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  min-width: 120px;        /* optional to match width of other buttons */
-  text-align: center;
-}
-
-.upload-label:hover {
-  background-color: #005baa;
-}
 /* =========================================
    File Name Display
 ========================================= */
