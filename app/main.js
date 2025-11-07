@@ -49,7 +49,7 @@ const defaultResumeData = {
   "projects": [
     {
       "title": "TaskMaster Pro",
-      "description": "Built comprehensive productivity and project management web application with real-time collaboration features for teams up to 50 members. Implemented user authentication system using JWT tokens and role-based access control for admin, manager, and member roles. Developed drag-and-drop Kanban board interface with React Beautiful DnD, enabling instant task synchronization across multiple devices using WebSockets.",
+      "description": "Built comprehensive productivity and project management web application with real-time collaboration features for teams up to 50 members.\nImplemented user authentication system using JWT tokens and role-based access control for admin, manager, and member roles.\nDeveloped drag-and-drop Kanban board interface with React Beautiful DnD, enabling instant task synchronization across multiple devices using WebSockets.",
       "technologies": "React, Node.js, Express, MongoDB, Redux, JWT, AWS S3",
       "dates": "Jan 2023 – Apr 2023"
     },
