@@ -313,20 +313,25 @@ button {
   background-color: #555;
 }
 
+/* Align upload label with other action buttons */
 .upload-label {
   background-color: #0078d7;
   color: white;
-  padding: 8px 12px;
+  padding: 8px 16px;       /* match other buttons */
   border-radius: 5px;
   cursor: pointer;
-  font-size: 0.9rem;
-  display: inline-block;
+  font-size: 0.9rem;       /* same as buttons */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  min-width: 120px;        /* optional to match width of other buttons */
+  text-align: center;
 }
 
 .upload-label:hover {
   background-color: #005baa;
 }
-
 /* =========================================
    File Name Display
 ========================================= */
