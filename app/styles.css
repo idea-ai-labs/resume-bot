@@ -265,6 +265,15 @@ button {
   background-color: #218838;
 }
 
+.upload-label {
+  background-color: #28a745;
+  color: white;
+  font-weight: 600;
+}
+
+.upload-label:hover {
+  background-color: #218838;
+}
 .reset-btn {
   background-color: #6c757d;
   color: white;
@@ -274,7 +283,7 @@ button {
   background-color: #555;
 }
 
-.upload-label {
+.upload-label-old {
   background-color: #0078d7;
   color: white;
   padding: 8px 12px;
@@ -284,7 +293,7 @@ button {
   display: inline-block;
 }
 
-.upload-label:hover {
+.upload-label-old:hover {
   background-color: #005baa;
 }
 
