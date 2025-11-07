@@ -191,10 +191,11 @@ body.dark-mode .card textarea {
   margin: 12px 0;
 }
 
+/* Common button/label styles */
 .actions button,
 .actions .upload-label {
   font-size: 0.9rem;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 5px;
   cursor: pointer;
   display: inline-flex;
@@ -207,16 +208,17 @@ body.dark-mode .card textarea {
   line-height: 1.2;
   width: auto;
   flex: 0 0 auto;
+  margin: 4px;
 }
 
 /* Upload Resume Label */
 .actions .upload-label {
-  background-color: #0078d7;
+  background-color: #6c757d; /* matches Reset button */
   color: white;
 }
 
 .actions .upload-label:hover {
-  background-color: #005baa;
+  background-color: #555; /* darker shade for hover */
 }
 
 /* Add Buttons */
@@ -249,6 +251,34 @@ body.dark-mode .card textarea {
 .actions .reset-btn:hover {
   background-color: #555;
 }
+
+/* File name text next to upload */
+.actions .file-name {
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+/* Autosave text styling */
+.autosave-text {
+  width: 100%;
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
+}
+
+body.dark-mode .autosave-text {
+  color: #ccc;
+}
+
+/* =========================================
+   Actions / Buttons Row
+========================================= */
+
 
 /* File name text next to upload */
 .actions .file-name {
