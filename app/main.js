@@ -107,6 +107,17 @@ function logDebug(msg) {
   console.log(msg);
 }
 
+// Capture all uncaught errors
+window.onerror = function(msg, url, line, col, error) {
+    logDebug(`❌ Error: ${msg} at ${url}:${line}:${col}`);
+    if (error && error.stack) logDebug(error.stack);
+};
+
+// Capture unhandled promise rejections
+window.addEventListener("unhandledrejection", function(e) {
+    logDebug(`❌ Unhandled Promise Rejection: ${e.reason}`);
+});
+
 // ------------------ Storage ------------------
 function saveToLocalStorage() {
   localStorage.setItem("resumeData", JSON.stringify(collectResumeData()));
