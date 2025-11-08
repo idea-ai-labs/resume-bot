@@ -412,7 +412,7 @@ function handleResumeUpload(e) {
 }
 
 // ------------------ Parse Helpers ------------------
-async function parsePDF(file) {
+async function parsePDFText(file) {
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
   let text = "";
@@ -423,6 +423,10 @@ async function parsePDF(file) {
   }
   resumeParser.parseResumeText(text);
   expandAllSections();
+}
+async function parsePDF(file) {
+  // Send file directly to REST API
+  await resumeParser.parseResumeText(file); // your parseResumeText function expects a File/Blob
 }
 async function parseDOCX(file) {
   const buf = await file.arrayBuffer();
