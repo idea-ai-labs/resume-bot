@@ -25,7 +25,7 @@ async function parseResumeText(pdfFile) {
 
     // Print raw response text first
     const responseText = await response.text();
-    console.log("Raw server response:", responseText);
+    logDebug("Raw server response:", responseText);
 
     if (!response.ok) {
       throw new Error(`Server error: ${response.status}`);
