@@ -355,6 +355,26 @@ button {
   background-color: #555;
 }
 
+.upload-label {
+  background-color: #6c757d; /* change to match other buttons */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  margin: 4px;
+  text-decoration: none;
+  transition: background 0.2s ease-in-out;
+}
+
+.upload-label:hover {
+  background-color: #555; /* darker shade for hover, matching Reset button */
+}
+
 /* =========================================
    File Name Display
 ========================================= */
