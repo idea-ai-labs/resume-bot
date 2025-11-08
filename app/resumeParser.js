@@ -2,7 +2,7 @@
 // 🧩 Resume Parsing and Populating Script (Unified)
 //-----------------------------------------------------
 
-async function parseResumeText(pdfFile) {
+async function parseResumeTextNew(pdfFile) {
   try {
     logDebug("🚀 Sending PDF to backend /api/generate for parsing...");
 
@@ -63,7 +63,7 @@ async function parseResumeText(pdfFile) {
   }
 }
 
-async function parseResumeTextOld(pdfFile) {
+async function parseResumeText(pdfFile) {
   try {
     logDebug("🚀 Sending PDF to backend /api/generate for parsing... v1");
 
