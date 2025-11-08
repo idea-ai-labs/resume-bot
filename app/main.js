@@ -28,10 +28,10 @@ const defaultResumeData = {
       "location": "San Francisco, CA",
       "dates": "June 2021 – Present",
       "details": [
-        "Architected and developed 8+ scalable full-stack web applications using React, Node.js, and PostgreSQL, serving 50,000+ active users with 99.9% uptime",
-        "Designed and implemented RESTful APIs handling 2 million+ requests daily, reducing average response time by 40% through query optimization and caching strategies",
-        "Led migration of monolithic application to microservices architecture using Docker and Kubernetes, reducing deployment time from 2 hours to 15 minutes",
-        "Mentored 5 junior developers through pair programming sessions and code reviews, resulting in 3 promotions within 18 months"
+        "Architected 8+ scalable web apps with React and Node.js serving 50,000+ users.",
+        "Designed RESTful APIs handling 2M+ daily requests, improving performance by 40%.",
+        "Migrated monolith to microservices with Docker and Kubernetes, cutting deployment time by 90%.",
+        "Mentored 5 junior developers, contributing to 3 promotions in 18 months."
       ]
     },
     {
@@ -40,47 +40,42 @@ const defaultResumeData = {
       "location": "San Jose, CA",
       "dates": "March 2020 – May 2021",
       "details": [
-        "Developed and maintained e-commerce platform features using React and Django, increasing user engagement by 35% and generating $2M in additional revenue",
-        "Implemented automated testing suite with Jest and Pytest achieving 80% code coverage, reducing production bugs by 45%",
-        "Collaborated with product and design teams to deliver 6 major feature releases in Agile sprints, consistently meeting project deadlines"
-      ]
-    },
-    {
-      "title": "Junior Software Developer",
-      "company": "StartUp Labs",
-      "location": "San Francisco, CA",
-      "dates": "June 2019 – February 2020",
-      "details": [
-        "Built responsive web interfaces using React and Bootstrap for 5 client projects, improving mobile user experience and accessibility scores",
-        "Integrated third-party APIs including Stripe, Twilio, and SendGrid, expanding platform functionality and reducing development time by 30%",
-        "Participated in daily standups and code reviews, contributing to team knowledge sharing and maintaining high code quality standards"
+        "Developed key e-commerce features using React and Django, increasing engagement by 35%.",
+        "Implemented automated tests with Jest and Pytest achieving 80% code coverage.",
+        "Collaborated cross-functionally to deliver 6 major feature releases on time."
       ]
     }
   ],
   "projects": [
     {
       "title": "TaskMaster Pro",
-      "description": "Built comprehensive productivity and project management web application with real-time collaboration features for teams up to 50 members. Implemented user authentication system using JWT tokens and role-based access control for admin, manager, and member roles. Developed drag-and-drop Kanban board interface with React Beautiful DnD, enabling instant task synchronization across multiple devices using WebSockets.",
+      "description": [
+        "Built team productivity web app with real-time collaboration for up to 50 users.",
+        "Implemented role-based access with JWT authentication.",
+        "Created drag-and-drop Kanban board using React Beautiful DnD and WebSockets."
+      ],
       "technologies": "React, Node.js, Express, MongoDB, Redux, JWT, AWS S3",
       "dates": "Jan 2023 – Apr 2023"
     },
     {
       "title": "DataViz Dashboard",
-      "description": "Developed interactive data visualization platform with 10+ customizable chart types for analyzing complex datasets up to 100,000 data points. Built Flask REST API backend with PostgreSQL database, reducing data load times by 70% through Pandas optimization. Created dynamic D3.js visualizations including heat maps and geographic maps with zoom, pan, and filtering capabilities.",
+      "description": [
+        "Developed data visualization platform with 10+ interactive chart types.",
+        "Built Flask REST API backend with optimized PostgreSQL queries.",
+        "Created dynamic D3.js visualizations with zoom, pan, and filters."
+      ],
       "technologies": "D3.js, Flask, Python, PostgreSQL, Pandas, Chart.js",
       "dates": "Sep 2022 – Dec 2022"
     },
     {
       "title": "E-Commerce Platform",
-      "description": "Developed full-featured e-commerce platform with product catalog, shopping cart, and secure checkout process integrated with Stripe payment gateway. Implemented product search system with Elasticsearch supporting fuzzy matching, autocomplete suggestions, and real-time filtering. Built admin dashboard for inventory management and order tracking with real-time analytics, achieving 4-second average page load time.",
+      "description": [
+        "Developed full-stack e-commerce site with secure Stripe-based checkout.",
+        "Implemented Elasticsearch product search with fuzzy matching.",
+        "Built admin dashboard for inventory and order analytics."
+      ],
       "technologies": "React, Redux, Node.js, Express, MongoDB, Stripe API",
       "dates": "May 2022 – Aug 2022"
-    },
-    {
-      "title": "Weather Forecast Application",
-      "description": "Created cross-platform mobile weather application for iOS and Android with location-based forecasts, 7-day predictions, and severe weather alerts. Integrated OpenWeather API and geolocation services for automatic location detection with support for multiple saved locations. Designed intuitive UI with animated weather icons and hourly forecast timelines, implementing AsyncStorage for offline data persistence.",
-      "technologies": "React Native, OpenWeather API, AsyncStorage, Expo",
-      "dates": "Jan 2022 – Mar 2022"
     }
   ],
   "skills": [
@@ -99,10 +94,6 @@ const defaultResumeData = {
     {
       "category": "Development Practices",
       "items": ["Agile/Scrum", "CI/CD", "Test-Driven Development (TDD)", "RESTful API Design", "Microservices Architecture", "Code Review"]
-    },
-    {
-      "category": "Soft Skills",
-      "items": ["Technical Leadership", "Mentorship", "Cross-functional Collaboration", "Problem Solving", "Project Management", "Technical Documentation"]
     }
   ]
 };
@@ -115,6 +106,17 @@ function logDebug(msg) {
   box.scrollTop = box.scrollHeight;
   console.log(msg);
 }
+
+// Capture all uncaught errors
+window.onerror = function(msg, url, line, col, error) {
+    logDebug(`❌ Error: ${msg} at ${url}:${line}:${col}`);
+    if (error && error.stack) logDebug(error.stack);
+};
+
+// Capture unhandled promise rejections
+window.addEventListener("unhandledrejection", function(e) {
+    logDebug(`❌ Unhandled Promise Rejection: ${e.reason}`);
+});
 
 // ------------------ Storage ------------------
 function saveToLocalStorage() {
@@ -267,7 +269,13 @@ function addProjectCard(d) {
     createInput(d?.title, "Project Title", v => card.dataset.title = v),
     createInput(d?.technologies, "Technologies Used", v => card.dataset.technologies = v),
     createInput(d?.dates, "Dates", v => card.dataset.dates = v),
-    createTextarea(d?.description, "Description", v => card.dataset.description = v),
+    //createTextarea(d?.description, "Description", v => card.dataset.description = v),
+    //createTextarea((d?.description || []).join("\n"), "Description (one per line)", v => card.dataset.description = v.split("\n")),
+    createTextarea(
+      Array.isArray(d?.description) ? d.description.join("\n") : (d?.description || ""),
+      "Description (one per line)",
+      v => card.dataset.description = v.split("\n")
+    ),
     createMoveButtons(card)
   );
 
@@ -313,7 +321,13 @@ function collectResumeData() {
     dates: c.children[3].value,
     details: c.children[4].value.split("\n")
   }));
-  const projects = mapCards("projects-cards", ["title", "technologies", "dates", "description"]);
+ // const projects = mapCards("projects-cards", ["title", "technologies", "dates", "description"]);
+  const projects = Array.from(document.getElementById("projects-cards").children).map(c => ({
+  title: c.children[0].value,
+  technologies: c.children[1].value,
+  dates: c.children[2].value,
+  description: c.children[3].value.split("\n")
+  }));
   const skills = Array.from(document.getElementById("skills-cards").children).map(c => ({
     category: c.children[0].value,
     items: c.children[1].value.split(",").map(s => s.trim())
@@ -342,6 +356,17 @@ function collapseAllSectionsOnLoad() {
   document.querySelectorAll(".toggle-icon").forEach(i => i.textContent = "+");
   document.getElementById("toggle-all-btn").textContent = "Expand All";
 }
+
+function expandAllSections() {
+  document.querySelectorAll(".section-content").forEach(content => {
+    content.classList.remove("collapsed");
+    content.style.maxHeight = content.scrollHeight + "px";
+  });
+  document.querySelectorAll(".toggle-icon").forEach(icon => icon.textContent = "−");
+  const btn = document.getElementById("toggle-all-btn");
+  if (btn) btn.textContent = "Collapse All";
+}
+
 function toggleAllSections() {
   const btn = document.getElementById("toggle-all-btn");
   const expand = btn.textContent === "Expand All";
@@ -392,7 +417,7 @@ function handleResumeUpload(e) {
 }
 
 // ------------------ Parse Helpers ------------------
-async function parsePDF(file) {
+async function parsePDFText(file) {
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
   let text = "";
@@ -402,11 +427,18 @@ async function parsePDF(file) {
     text += content.items.map(it => it.str).join(" ") + "\n";
   }
   resumeParser.parseResumeText(text);
+  expandAllSections();
+}
+async function parsePDF(file) {
+  // Send file directly to REST API
+  await resumeParser.parseResumeText(file); // your parseResumeText function expects a File/Blob
+  expandAllSections();
 }
 async function parseDOCX(file) {
   const buf = await file.arrayBuffer();
   const result = await window.mammoth.extractRawText({ arrayBuffer: buf });
   resumeParser.parseResumeText(result.value);
+  expandAllSections();
 }
 
 // ------------------ Render / Reset ------------------
@@ -428,6 +460,7 @@ function resetToDefault() {
   localStorage.removeItem("resumeData");
   renderResume(defaultResumeData);
   saveToLocalStorage();
+  expandAllSections();
 }
 
 // ------------------ Theme Toggle ------------------

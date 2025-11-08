@@ -128,11 +128,10 @@ header p {
 
 .card textarea {
   resize: vertical;
-  min-height: 80px;    /* increased from 50px */
-  max-height: 200px;   /* optional upper limit */
+  min-height: 80px;
+  max-height: 200px;
 }
 
-/* --- Dark Mode --- */
 body.dark-mode .card input,
 body.dark-mode .card textarea {
   background-color: #333;
@@ -140,7 +139,7 @@ body.dark-mode .card textarea {
   border: 1px solid #555;
 }
 
-/* ------------------ Button Row ------------------ */
+/* ------------------ Card Buttons ------------------ */
 .card-buttons {
   display: flex;
   gap: 6px;
@@ -161,7 +160,6 @@ body.dark-mode .card textarea {
   cursor: not-allowed;
 }
 
-/* Default button colors */
 .remove-btn {
   background-color: #e74c3c;
   color: #fff;
@@ -182,48 +180,131 @@ body.dark-mode .card textarea {
   background-color: #2980b9;
 }
 
-/* ------------------ Dark Mode ------------------ */
-body.dark-mode {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
+/* =========================================
+   Actions / Buttons Row
+========================================= */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0;
 }
 
-body.dark-mode .card {
-  background-color: #2a2a2a;
-  border-color: #555;
+/* Common button/label styles */
+.actions button,
+.actions .upload-label {
+  font-size: 0.9rem;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  text-decoration: none;
+  line-height: 1.2;
+  width: auto;
+  flex: 0 0 auto;
+  margin: 4px;
 }
 
-body.dark-mode .card input,
-body.dark-mode .card textarea {
-  background-color: #3a3a3a;
-  border-color: #666;
-  color: #e0e0e0;
+/* Upload Resume Label */
+.actions .upload-label {
+  background-color: #6c757d; /* matches Reset button */
+  color: white;
 }
 
-body.dark-mode .card-buttons button {
-  color: #fff;
+.actions .upload-label:hover {
+  background-color: #555; /* darker shade for hover */
 }
 
-body.dark-mode .remove-btn {
-  background-color: #e74c3c;
+/* Add Buttons */
+.actions .add-btn {
+  background-color: #0078d7;
+  color: white;
 }
 
-body.dark-mode .remove-btn:hover:not(:disabled) {
-  background-color: #c0392b;
+.actions .add-btn:hover {
+  background-color: #005baa;
 }
 
-body.dark-mode .move-up,
-body.dark-mode .move-down {
-  background-color: #3498db;
+/* Generate Button */
+.actions .generate-btn {
+  background-color: #28a745;
+  color: white;
+  font-weight: 600;
 }
 
-body.dark-mode .move-up:hover:not(:disabled),
-body.dark-mode .move-down:hover:not(:disabled) {
-  background-color: #2980b9;
+.actions .generate-btn:hover {
+  background-color: #218838;
+}
+
+/* Reset Button */
+.actions .reset-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.actions .reset-btn:hover {
+  background-color: #555;
+}
+
+/* File name text next to upload */
+.actions .file-name {
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+/* Autosave text styling */
+.autosave-text {
+  width: 100%;
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
+}
+
+body.dark-mode .autosave-text {
+  color: #ccc;
 }
 
 /* =========================================
-   Buttons
+   Actions / Buttons Row
+========================================= */
+
+
+/* File name text next to upload */
+.actions .file-name {
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+/* Autosave text styling */
+.autosave-text {
+  width: 100%;
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
+}
+
+body.dark-mode .autosave-text {
+  color: #ccc;
+}
+
+/* =========================================
+   Global Buttons
 ========================================= */
 button {
   border: none;
@@ -354,7 +435,7 @@ button {
    Dark Mode
 ========================================= */
 body.dark-mode {
-  background: #121212;
+  background-color: #121212;
   color: #e0e0e0;
 }
 
@@ -392,8 +473,8 @@ body.dark-mode .card textarea {
 
 body.dark-mode .add-btn,
 body.dark-mode .remove-btn,
-body.dark-mode #generate-btn,
-body.dark-mode #dark-mode-btn {
+body.dark-mode .generate-btn,
+body.dark-mode .reset-btn {
   filter: brightness(1.2);
 }
 
