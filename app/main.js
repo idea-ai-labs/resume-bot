@@ -269,8 +269,8 @@ function addProjectCard(d) {
     createInput(d?.title, "Project Title", v => card.dataset.title = v),
     createInput(d?.technologies, "Technologies Used", v => card.dataset.technologies = v),
     createInput(d?.dates, "Dates", v => card.dataset.dates = v),
-    //createTextarea(d?.description, "Description", v => card.dataset.description = v),
-    createTextarea((d?.description || []).join("\n"), "Description (one per line)", v => card.dataset.description = v.split("\n")),
+    createTextarea(d?.description, "Description", v => card.dataset.description = v),
+    //createTextarea((d?.description || []).join("\n"), "Description (one per line)", v => card.dataset.description = v.split("\n")),
     createMoveButtons(card)
   );
 
