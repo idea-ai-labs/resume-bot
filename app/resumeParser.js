@@ -4,6 +4,67 @@
 
 async function parseResumeText(pdfFile) {
   try {
+    logDebug("🚀 Sending PDF to backend /api/generate for parsing...");
+
+    if (!pdfFile) {
+      logDebug("⚠️ No file provided.");
+      return;
+    }
+
+    // Ensure it's a File or Blob
+    const fileToSend = pdfFile instanceof File ? pdfFile : pdfFile.file || pdfFile;
+    const formData = new FormData();
+    formData.append("file", fileToSend, fileToSend.name || "resume.pdf");
+
+    const API_URL = "https://idea-ai-parseresume.hf.space/api/generate";
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: formData
+    });
+
+    // Print raw response text first
+    const responseText = await response.text();
+    console.log("Raw server response:", responseText);
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    // Then parse JSON
+    const parsed = JSON.parse(responseText);
+    logDebug("✅ Parsed JSON:", parsed);
+
+    // --- Populate UI fields safely ---
+    if (!parsed || Object.keys(parsed).length === 0) {
+      logDebug("⚠️ Empty response from server.");
+      return;
+    }
+
+    if (parsed.name) document.getElementById("name").value = parsed.name;
+    if (parsed.contact?.email) document.getElementById("email").value = parsed.contact.email;
+    if (parsed.contact?.phone) document.getElementById("phone").value = parsed.contact.phone;
+    if (parsed.contact?.website) document.getElementById("website").value = parsed.contact.website;
+
+    ["education", "experience", "projects", "skills"].forEach(id => {
+      document.getElementById(`${id}-cards`).innerHTML = "";
+    });
+
+    if (parsed.education?.length) parsed.education.forEach(addEducationCard);
+    if (parsed.experience?.length) parsed.experience.forEach(addExperienceCard);
+    if (parsed.projects?.length) parsed.projects.forEach(addProjectCard);
+    if (parsed.skills?.length) parsed.skills.forEach(addSkillCard);
+
+    saveToLocalStorage();
+    logDebug("🎯 Resume parsed and populated successfully.");
+
+  } catch (err) {
+    logDebug("❌ Error during resume parsing: " + err.message);
+  }
+}
+
+async function parseResumeTextOld(pdfFile) {
+  try {
     logDebug("🚀 Sending PDF to backend /api/generate for parsing... v1");
 
     if (!pdfFile) {
