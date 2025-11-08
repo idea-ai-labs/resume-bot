@@ -269,8 +269,13 @@ function addProjectCard(d) {
     createInput(d?.title, "Project Title", v => card.dataset.title = v),
     createInput(d?.technologies, "Technologies Used", v => card.dataset.technologies = v),
     createInput(d?.dates, "Dates", v => card.dataset.dates = v),
-    createTextarea(d?.description, "Description", v => card.dataset.description = v),
+    //createTextarea(d?.description, "Description", v => card.dataset.description = v),
     //createTextarea((d?.description || []).join("\n"), "Description (one per line)", v => card.dataset.description = v.split("\n")),
+    createTextarea(
+      Array.isArray(d?.description) ? d.description.join("\n") : (d?.description || ""),
+      "Description (one per line)",
+      v => card.dataset.description = v.split("\n")
+    ),
     createMoveButtons(card)
   );
 
@@ -427,6 +432,7 @@ async function parsePDFText(file) {
 async function parsePDF(file) {
   // Send file directly to REST API
   await resumeParser.parseResumeText(file); // your parseResumeText function expects a File/Blob
+  expandAllSections();
 }
 async function parseDOCX(file) {
   const buf = await file.arrayBuffer();
