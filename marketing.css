@@ -305,6 +305,48 @@ section {
   background-color: #00f2fe;
 }
 
+.contact-form {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: left;
+  display: flex;
+  flex-direction: column; /* stack label + input vertically */
+  gap: 15px;
+}
+
+.contact-form label {
+  display: block; /* ensures label is on its own line */
+  font-weight: 500;
+  color: #333;
+}
+
+.contact-form input,
+.contact-form textarea {
+  display: block;      /* stack inputs vertically */
+  width: 100%;         /* take full width of form */
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  box-sizing: border-box; /* prevents overflow */
+}
+
+.contact-form button {
+  align-self: flex-start; /* keeps the button aligned nicely */
+  padding: 12px 30px;
+  border-radius: 30px;
+  border: none;
+  background: #4facfe;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.contact-form button:hover {
+  background: #00f2fe;
+}
+
 /* ------------------------ Contact Form Feedback ------------------------ */
 .form-feedback {
   display: none;           /* hidden by default */
