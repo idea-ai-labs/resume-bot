@@ -3,114 +3,160 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NextGen Resume Lab – Build One-Page Resumes Instantly</title>
+  <title>ResumeSamurai – Build One-Page Resumes Instantly</title>
   <meta name="description" content="Create professional, mobile-friendly resumes in minutes. Perfect for college grads and busy professionals.">
-  
+
   <!-- Open Graph for social sharing -->
-  <meta property="og:title" content="NextGen Resume Lab – Build One-Page Resumes Instantly">
+  <meta property="og:title" content="ResumeSamurai – Build One-Page Resumes Instantly">
   <meta property="og:description" content="Create professional, mobile-friendly resumes in minutes. Perfect for college grads and busy professionals.">
   <meta property="og:image" content="https://resume-bot-one.vercel.app/sample-resume.png">
   <meta property="og:url" content="https://resume-bot-one.vercel.app">
   <meta name="twitter:card" content="summary_large_image">
-  
+
   <link rel="stylesheet" href="marketing.css" />
 </head>
 <body>
-  <!--header>
-    <div class="container header-container">
-      <h1>🚀 NextGen Resume Lab</h1>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="logo">ResumeSamurai</div>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#difference">How We’re Different</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#testimonial">Testimonials</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="/app" class="cta-btn">Build Resume</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero / Header -->
+  <header class="hero">
+    <div class="hero-container">
+      <h1>🚀 ResumeSamurai</h1>
       <p>Build clean, professional resumes on-the-go. One-page, export-ready, and hassle-free.</p>
-      <a href="/app" class="cta-btn">Start Building Your Resume</a>
-      
-      <!-- Sample Resume Preview -->
-      <!--div class="sample-resume">
-        <img src="/sample-resume.png" alt="Sample Resume Preview" />
+      <div class="cta-buttons">
+        <a href="/app" class="cta-btn">Start Building Your Resume</a>
+        <button id="preview-btn" class="preview-btn">👁️ View Sample Resume</button>
       </div>
     </div>
-</header-->
+  </header>
 
-<header>
-  <div class="container header-container">
-    <h1>🚀 NextGen Resume Lab</h1>
-    <p>Build clean, professional resumes on-the-go. One-page, export-ready, and hassle-free.</p>
-
-    <div class="cta-buttons">
-      <a href="/app" class="cta-btn">Start Building Your Resume</a>
-      <button id="preview-btn" class="preview-btn">👁️ View Sample Resume</button>
+  <!-- Sample Resume Modal -->
+  <div id="preview-modal" class="preview-modal">
+    <div class="modal-content">
+      <span id="close-modal" class="close-btn">&times;</span>
+      <img src="/sample-resume.png" alt="Sample Resume Preview" />
     </div>
   </div>
-</header>
 
-<!-- Popup Modal -->
-<div id="preview-modal" class="preview-modal">
-  <div class="modal-content">
-    <span id="close-modal" class="close-btn">&times;</span>
-    <img src="/sample-resume.png" alt="Sample Resume Preview" />
-  </div>
-</div>
+  <!-- About Section -->
+  <section class="about" id="about">
+    <h2>About ResumeSamurai</h2>
+    <p>ResumeSamurai helps students and professionals create clean, one-page resumes in minutes. No confusing templates, no formatting headaches—just a professional-looking resume that highlights your skills and achievements.</p>
+    <p>Our mission is to empower you to tell your story effectively and land the job you deserve, whether you're entering the workforce or making a career change.</p>
+  </section>
 
-  <section class="features">
-    <div class="container">
-      <h2>Why Choose NextGen Resume Lab?</h2>
-      <div class="feature-grid">
-        <div class="feature">
-          <h3>Fast & Simple</h3>
-          <p>Create your resume in minutes without confusing templates or software.</p>
-        </div>
-        <div class="feature">
-          <h3>Mobile Friendly</h3>
-          <p>Edit your resume anywhere, from phone or laptop, with a responsive interface.</p>
-        </div>
-        <div class="feature">
-          <h3>Clean Formatting</h3>
-          <p>One-page, professional layout that recruiters actually read.</p>
-        </div>
-        <div class="feature">
-          <h3>Export to PDF</h3>
-          <p>Download your resume instantly in a ready-to-send format.</p>
-        </div>
+  <!-- How We're Different -->
+  <section class="difference" id="difference">
+    <h2>How We're Different</h2>
+    <div class="diff-grid">
+      <div class="diff-item">
+        <h3>Simple & Fast</h3>
+        <p>Create a polished resume in minutes without any complex tools or design software.</p>
+      </div>
+      <div class="diff-item">
+        <h3>Mobile-Ready</h3>
+        <p>Edit your resume anytime, anywhere, with a responsive, mobile-friendly interface.</p>
+      </div>
+      <div class="diff-item">
+        <h3>ATS-Friendly</h3>
+        <p>Our resumes are structured for modern Applicant Tracking Systems to ensure your resume gets seen.</p>
+      </div>
+      <div class="diff-item">
+        <h3>Professional Design</h3>
+        <p>One-page layout that’s clean, modern, and recruiter-approved.</p>
       </div>
     </div>
   </section>
 
-  <section class="testimonial">
-    <div class="container">
-      <h2>Trusted by Students & Professionals</h2>
-      <blockquote>
-        "NextGen Resume Lab made building my first resume fast and stress-free. Loved the clean look!"
-      </blockquote>
-      <cite>— Jane D., College Grad</cite>
-      <blockquote>
-        "Saved me hours of formatting headaches. Highly recommend!"
-      </blockquote>
-      <cite>— Mark T., Job Seeker</cite>
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <h2>Key Features</h2>
+    <div class="feature-grid">
+      <div class="feature">
+        <h3>Fast & Simple</h3>
+        <p>Create your resume quickly without confusing templates or software.</p>
+      </div>
+      <div class="feature">
+        <h3>Mobile-Friendly</h3>
+        <p>Edit your resume anywhere, on any device.</p>
+      </div>
+      <div class="feature">
+        <h3>Clean Formatting</h3>
+        <p>One-page professional layout that recruiters actually read.</p>
+      </div>
+      <div class="feature">
+        <h3>Export to PDF</h3>
+        <p>Download your resume instantly in a ready-to-send format.</p>
+      </div>
     </div>
   </section>
 
+  <!-- Testimonials Section -->
+  <section class="testimonial" id="testimonial">
+    <h2>Trusted by Students & Professionals</h2>
+    <blockquote>
+      "ResumeSamurai made building my first resume fast and stress-free. Loved the clean look!"
+    </blockquote>
+    <cite>— Jane D., College Grad</cite>
+    <blockquote>
+      "Saved me hours of formatting headaches. Highly recommend!"
+    </blockquote>
+    <cite>— Mark T., Job Seeker</cite>
+  </section>
+
+  <!-- CTA Section -->
   <section class="cta">
-    <div class="container">
-      <h2>Ready to create your resume?</h2>
-      <a href="/app" class="cta-btn">Build Your Resume Now</a>
-    </div>
+    <h2>Ready to create your resume?</h2>
+    <a href="/app" class="cta-btn">Build Your Resume Now</a>
   </section>
 
+  <!-- Contact Section -->
+  <section class="contact" id="contact">
+    <h2>Contact Us</h2>
+    <p>Have questions or feedback? Reach out to our team—we’d love to hear from you!</p>
+    <form>
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" placeholder="Your Name" required>
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="Your Email" required>
+
+      <label for="message">Message</label>
+      <textarea id="message" name="message" rows="5" placeholder="Your Message" required></textarea>
+
+      <button type="submit">Send Message</button>
+    </form>
+  </section>
+
+  <!-- Footer -->
   <footer>
-    <div class="container footer-container">
-      <p>&copy; 2025 NextGen Resume Lab. All rights reserved.</p>
-      <p><a href="/privacy.html">Privacy Policy</a> | <a href="/terms.html">Terms of Service</a></p>
-    </div>
+    <p>&copy; 2025 ResumeSamurai. All rights reserved.</p>
+    <p><a href="/privacy.html">Privacy Policy</a> | <a href="/terms.html">Terms of Service</a></p>
   </footer>
 
   <script>
-  const previewBtn = document.getElementById('preview-btn');
-  const modal = document.getElementById('preview-modal');
-  const closeModal = document.getElementById('close-modal');
+    // Modal functionality
+    const previewBtn = document.getElementById('preview-btn');
+    const modal = document.getElementById('preview-modal');
+    const closeModal = document.getElementById('close-modal');
 
-  previewBtn.addEventListener('click', () => modal.style.display = 'block');
-  closeModal.addEventListener('click', () => modal.style.display = 'none');
-  window.addEventListener('click', (e) => {
-    if (e.target === modal) modal.style.display = 'none';
-  });
-</script>
+    previewBtn.addEventListener('click', () => modal.style.display = 'block');
+    closeModal.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+  </script>
 </body>
 </html>
