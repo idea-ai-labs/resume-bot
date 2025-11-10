@@ -25,7 +25,7 @@ nav {
   justify-content: space-between;
   align-items: center;
   padding: 20px 40px;
-  background: white;
+  background: #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   position: sticky;
   top: 0;
@@ -33,7 +33,7 @@ nav {
 }
 
 nav .logo {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #4facfe;
 }
@@ -67,7 +67,7 @@ nav ul li a:hover {
   }
 }
 
-/* ------------------------ Header + Hero ------------------------ */
+/* ------------------------ Header / Hero ------------------------ */
 header, .hero {
   text-align: center;
   padding: 100px 20px 60px;
@@ -101,7 +101,6 @@ header .cta-btn, .hero .cta-btn {
   font-weight: 600;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   transition: all 0.3s ease;
-  margin-top: 10px;
 }
 
 header .cta-btn:hover, .hero .cta-btn:hover {
@@ -119,9 +118,7 @@ header .cta-btn:hover, .hero .cta-btn:hover {
   font-size: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  display: inline-block;
+  margin: 20px 0;
 }
 
 .preview-btn:hover {
@@ -176,14 +173,13 @@ section {
   text-align: center;
 }
 
-/* About Section */
-.about h2 {
+.about h2, .features h2, .difference h2, .contact h2 {
   font-size: 2.5rem;
   color: #4facfe;
   margin-bottom: 30px;
 }
 
-.about p {
+.about p, .contact p {
   max-width: 800px;
   margin: 0 auto 20px;
   font-size: 1.1rem;
@@ -194,12 +190,6 @@ section {
 /* Features / Differentiators */
 .features, .difference {
   background-color: #f0f8ff;
-}
-
-.features h2, .difference h2 {
-  font-size: 2.5rem;
-  margin-bottom: 50px;
-  color: #4facfe;
 }
 
 .feature-grid, .diff-grid {
@@ -233,16 +223,11 @@ section {
   box-shadow: 0 12px 24px rgba(0,0,0,0.1);
 }
 
-/* Testimonials */
+/* ------------------------ Testimonials ------------------------ */
 .testimonial {
   background-color: #4facfe;
   color: #fff;
   padding: 80px 20px;
-}
-
-.testimonial h2 {
-  font-size: 2rem;
-  margin-bottom: 30px;
 }
 
 .testimonial blockquote {
@@ -258,7 +243,7 @@ section {
   opacity: 0.85;
 }
 
-/* CTA */
+/* ------------------------ CTA ------------------------ */
 .cta h2 {
   font-size: 2rem;
   margin-bottom: 20px;
@@ -279,20 +264,7 @@ section {
   transform: translateY(-3px);
 }
 
-/* Contact Section */
-.contact h2 {
-  font-size: 2.5rem;
-  color: #4facfe;
-  margin-bottom: 30px;
-}
-
-.contact p {
-  font-size: 1.1rem;
-  max-width: 700px;
-  margin: 0 auto 20px;
-  color: #555;
-}
-
+/* ------------------------ Contact Section ------------------------ */
 .contact form {
   max-width: 600px;
   margin: 0 auto;
@@ -309,75 +281,49 @@ section {
 .contact input,
 .contact textarea {
   width: 100%;
-  padding: 12px;
+  padding: 12px 15px;
   margin-bottom: 20px;
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 1rem;
+  box-sizing: border-box;
 }
 
-.contact button {
-  background: #4facfe;
-  color: #fff;
-  border: none;
+.contact button.cta-btn {
+  display: inline-block;
   padding: 12px 30px;
   border-radius: 30px;
+  border: none;
+  background-color: #4facfe;
+  color: #fff;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
-.contact button:hover {
-  background: #00f2fe;
+.contact button.cta-btn:hover {
+  background-color: #00f2fe;
 }
 
-/* Navbar */
-.navbar {
-  background: #fff;
-  border-bottom: 1px solid #eee;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  padding: 15px 0;
+/* Success / Error messages */
+.form-feedback {
+  display: none;
+  margin-top: 20px;
+  padding: 12px 15px;
+  border-radius: 6px;
 }
 
-.nav-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 20px;
+.form-feedback.success {
+  background-color: #d4edda;
+  color: #155724;
 }
 
-.logo {
-  font-size: 1.6rem;
-  font-weight: 700;
-  text-decoration: none;
-  color: #333;
+.form-feedback.error {
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 20px;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-links li a {
-  text-decoration: none;
-  font-weight: 500;
-  color: #333;
-  transition: color 0.3s ease;
-}
-
-.nav-links li a:hover,
-.nav-links li a.active {
-  color: #4facfe;
-}
-
-/* Footer */
+/* ------------------------ Footer ------------------------ */
 footer {
   background-color: #222;
   color: #aaa;
