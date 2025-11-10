@@ -7,6 +7,21 @@
   <link rel="stylesheet" href="marketing.css" />
 </head>
 <body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="logo">ResumeSamurai</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="how-we-are-different.html">How We're Different</a></li>
+        <li><a href="testimonials.html">Testimonials</a></li>
+        <li><a href="contact.html" class="active">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Header -->
   <header>
     <div class="header-container">
       <h1>Contact Us</h1>
@@ -14,8 +29,9 @@
     </div>
   </header>
 
+  <!-- Contact Form -->
   <section class="contact-section container">
-    <form action="https://formspree.io/f/movyqaoa" method="POST" class="contact-form">
+    <form id="contact-form" class="contact-form" novalidate>
       <label for="name">Your Name</label>
       <input type="text" name="name" id="name" required />
 
@@ -27,10 +43,62 @@
 
       <button type="submit" class="cta-btn">Send Message</button>
     </form>
+
+    <div id="form-success" class="form-feedback success">
+      ✅ Your message has been sent successfully!
+    </div>
+    <div id="form-error" class="form-feedback error">
+      ❌ Oops — something went wrong. Please try again later.
+    </div>
   </section>
 
+  <!-- Footer -->
   <footer>
     <p>© 2025 ResumeSamurai. All rights reserved.</p>
   </footer>
+
+  <!-- JavaScript for AJAX Submission -->
+  <script>
+    (function() {
+      const FORMSPREE_URL = "https://formspree.io/f/movyqaoa";
+      const form = document.getElementById("contact-form");
+      const successMsg = document.getElementById("form-success");
+      const errorMsg = document.getElementById("form-error");
+
+      function showMessage(type) {
+        successMsg.style.display = type === "success" ? "block" : "none";
+        errorMsg.style.display = type === "error" ? "block" : "none";
+        window.scrollTo({ top: form.offsetTop - 40, behavior: "smooth" });
+      }
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        showMessage(null);
+
+        const data = {
+          name: form.name.value,
+          email: form.email.value,
+          message: form.message.value,
+        };
+
+        try {
+          const res = await fetch(FORMSPREE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (res.ok) {
+            form.reset();
+            showMessage("success");
+          } else {
+            showMessage("error");
+          }
+        } catch (err) {
+          showMessage("error");
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
