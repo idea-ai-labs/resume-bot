@@ -66,8 +66,18 @@
       const errorMsg = document.getElementById("form-error");
 
       function showMessage(type) {
-        successMsg.style.display = type === "success" ? "block" : "none";
-        errorMsg.style.display = type === "error" ? "block" : "none";
+        // Hide both first
+        successMsg.classList.remove("show");
+        errorMsg.classList.remove("show");
+
+        // Show the relevant message
+        if (type === "success") {
+          successMsg.classList.add("show");
+        } else if (type === "error") {
+          errorMsg.classList.add("show");
+        }
+
+        // Scroll into view
         window.scrollTo({ top: form.offsetTop - 40, behavior: "smooth" });
       }
 
@@ -78,14 +88,17 @@
         const data = {
           name: form.name.value,
           email: form.email.value,
-          message: form.message.value,
+          message: form.message.value
         };
 
         try {
           const res = await fetch(FORMSPREE_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify(data),
+            headers: { 
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify(data)
           });
 
           if (res.ok) {
