@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: /app/
 Allow: /
-Sitemap: https://resume-bot-one.vercel.app/sitemap.xml
+Sitemap: https://resume-samurai.vercel.app/sitemap.xml
