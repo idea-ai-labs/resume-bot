@@ -1,4 +1,3 @@
 User-agent: *
-Disallow: /app/
 Allow: /
 Sitemap: https://resume-samurai.vercel.app/sitemap.xml
